@@ -1,0 +1,43 @@
+cohort,axis,variant,HR,p
+TCGA-LUAD,proliferation,"primary (adjusted, all stages)",1.308,0.000977
+TCGA-LUAD,proliferation,stage-only adjustment,1.271,0.00248
+TCGA-LUAD,proliferation,stage IV excluded,1.327,0.00108
+TCGA-LUAD,proliferation,mean z-score instead of ssGSEA,1.092,0.25
+TCGA-LUAD,proliferation,winsorised at 1%/99%,1.315,0.000935
+TCGA-LUAD,hypoxia,"primary (adjusted, all stages)",1.447,1.74e-05
+TCGA-LUAD,hypoxia,stage-only adjustment,1.425,3.61e-05
+TCGA-LUAD,hypoxia,stage IV excluded,1.44,7.03e-05
+TCGA-LUAD,hypoxia,mean z-score instead of ssGSEA,1.057,0.46
+TCGA-LUAD,hypoxia,winsorised at 1%/99%,1.449,1.68e-05
+GSE31210,proliferation,"primary (adjusted, all stages)",1.416,0.0432
+GSE31210,proliferation,stage-only adjustment,1.44,0.0296
+GSE31210,proliferation,stage IV excluded,1.416,0.0432
+GSE31210,proliferation,mean z-score instead of ssGSEA,1.427,0.0389
+GSE31210,proliferation,winsorised at 1%/99%,1.436,0.0403
+GSE31210,hypoxia,"primary (adjusted, all stages)",1.959,0.000738
+GSE31210,hypoxia,stage-only adjustment,2.016,0.000405
+GSE31210,hypoxia,stage IV excluded,1.959,0.000738
+GSE31210,hypoxia,mean z-score instead of ssGSEA,2.205,0.000126
+GSE31210,hypoxia,winsorised at 1%/99%,1.927,0.00103
+GSE31210,proliferation,recurrence-free survival,1.674,2.83e-05
+GSE31210,hypoxia,recurrence-free survival,1.825,3.58e-05
+GSE37745,proliferation,"primary (adjusted, all stages)",1.28,0.0516
+GSE37745,proliferation,stage-only adjustment,1.223,0.107
+GSE37745,proliferation,stage IV excluded,1.225,0.118
+GSE37745,proliferation,mean z-score instead of ssGSEA,1.367,0.016
+GSE37745,proliferation,winsorised at 1%/99%,1.291,0.0466
+GSE37745,hypoxia,"primary (adjusted, all stages)",1.088,0.529
+GSE37745,hypoxia,stage-only adjustment,1.117,0.404
+GSE37745,hypoxia,stage IV excluded,1.107,0.449
+GSE37745,hypoxia,mean z-score instead of ssGSEA,1.091,0.498
+GSE37745,hypoxia,winsorised at 1%/99%,1.083,0.552
+GSE50081,proliferation,"primary (adjusted, all stages)",1.303,0.0397
+GSE50081,proliferation,stage-only adjustment,1.258,0.071
+GSE50081,proliferation,stage IV excluded,1.303,0.0397
+GSE50081,proliferation,mean z-score instead of ssGSEA,1.108,0.473
+GSE50081,proliferation,winsorised at 1%/99%,1.316,0.036
+GSE50081,hypoxia,"primary (adjusted, all stages)",1.302,0.073
+GSE50081,hypoxia,stage-only adjustment,1.319,0.0627
+GSE50081,hypoxia,stage IV excluded,1.302,0.073
+GSE50081,hypoxia,mean z-score instead of ssGSEA,1.06,0.713
+GSE50081,hypoxia,winsorised at 1%/99%,1.332,0.0544

@@ -1,0 +1,9 @@
+set_id,category,source,file,url,retrieved,note
+hallmark,msigdb,MSigDB Hallmark,HALLMARK.gmt,https://www.gsea-msigdb.org,TBD,"50 条通路; 离线缓存到 data/genesets/"
+c3_tft,msigdb,MSigDB C3 TFT,TFT.gmt,https://www.gsea-msigdb.org,TBD,"转录因子靶基因"
+kegg,msigdb,MSigDB C2 CP KEGG,c2.cp.kegg.gmt,https://www.gsea-msigdb.org,TBD,"避免 enrichKEGG 在线接口"
+mregdc_published,literature,已发表 mregDC 签名,TBD,TBD,TBD,"W1 需确定具体文献与基因列表; 增量价值的比较对象"
+ifng_effector,literature,IFN-gamma 效应签名,TBD,TBD,TBD,"干扰素通路; 混杂候选"
+tide,literature,TIDE 评分,TBD,http://tide.dfci.harvard.edu,TBD,"免疫治疗响应预测基线"
+immune_subtype,literature,免疫亚型基因集,TBD,TBD,TBD,"C1-C6 或 Thorsson 六型"
+dc_lineage,internal,DC lineage 分数,NA,NA,NA,"丰度代理指标; 与去卷积结果互校"

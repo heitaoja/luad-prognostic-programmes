@@ -1,0 +1,6 @@
+cohort_id,source,accession,cancer,n_total,n_usable,role,group_field,outcome_os,outcome_response,platform,scale,file_path,status,notes
+TCGA-LUAD,GDC,TCGA-LUAD,LUAD,589,515,discovery,tumour (barcode 01),OS,NA,Illumina RNA-seq,log2(count+1),data/raw/tcga,verified,"528 primary tumour samples; 515 with OS; 185 deaths; median OS 22.0 mo"
+GSE31210,GEO,GSE31210,LUAD,246,204,validation,primary lung tumour,OS,NA,Affymetrix HG-U133 Plus 2.0,linear intensity -> log2(x+1),data/raw/geo,verified,"204 tumours with OS; 30 deaths; median OS 59.6 mo; RFS also available"
+GSE37745,GEO,GSE37745,NSCLC,196,106,validation,histology == adeno,OS,NA,Affymetrix HG-U133 Plus 2.0,log2,data/raw/geo,verified,"restricted to adenocarcinoma; 106 with OS; 77 deaths"
+GSE50081,GEO,GSE50081,NSCLC,181,127,validation,histology == adenocarcinoma,OS,NA,Affymetrix HG-U133 Plus 2.0,log2,data/raw/geo,verified,"restricted to adenocarcinoma; 127 with OS; 51 deaths; raw time in YEARS"
+GSE72094,GEO,GSE72094,LUAD,442,0,excluded,NA,OS,NA,HuRSTA custom array (GPL15048),log2,NA,excluded,"no annotation package (huRSTA2a520709.db removed); probes cannot be mapped to symbols"

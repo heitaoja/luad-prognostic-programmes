@@ -1,0 +1,5 @@
+Cohort,Samples,Deaths,Median OS (months),Stage known (%),Age known,Sex known,Raw time unit,Expression range (log2)
+TCGA-LUAD,515,185,22,98,505,515,days,0.0..22.4
+GSE31210,204,30,59.6,100,204,204,days,0.1..15.7
+GSE37745,106,77,47.8,100,106,106,days,2.4..15.2
+GSE50081,127,51,52.4,100,127,127,years,1.8..14.7

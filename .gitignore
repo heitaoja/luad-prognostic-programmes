@@ -1,0 +1,22 @@
+# raw / derived data (re-downloadable, see docs/data_provenance.md)
+data/raw/
+data/processed/
+data/interim/
+*.rds
+*.RData
+*.h5ad
+*.gz
+*.bz2
+*.zip
+
+# local scaffolding
+_work/
+.dsh-office-preview/
+.Rproj.user/
+.Rhistory
+renv/library/
+
+# OS noise
+Thumbs.db
+desktop.ini
+.DS_Store

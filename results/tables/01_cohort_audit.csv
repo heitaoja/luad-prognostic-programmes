@@ -1,0 +1,5 @@
+cohort,n_samples,n_genes,n_os,n_events,median_os_mo,n_stage,pct_stage_known,n_age,n_sex,raw_time_unit,expr_range
+TCGA-LUAD,515,36650,515,185,22,507,98,505,515,days,0.0..22.4
+GSE31210,204,21355,204,30,59.6,204,100,204,204,days,0.1..15.7
+GSE37745,106,21355,106,77,47.8,106,100,106,106,days,2.4..15.2
+GSE50081,127,21355,127,51,52.4,127,100,127,127,years,1.8..14.7

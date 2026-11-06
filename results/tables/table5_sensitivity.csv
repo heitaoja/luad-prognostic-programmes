@@ -1,0 +1,13 @@
+axis,variant,GSE31210,GSE37745,GSE50081,TCGA-LUAD
+hypoxia,mean z-score instead of ssGSEA,2.205,1.091,1.06,1.057
+hypoxia,"primary (adjusted, all stages)",1.959,1.088,1.302,1.447
+hypoxia,recurrence-free survival,1.825,,,
+hypoxia,stage IV excluded,1.959,1.107,1.302,1.44
+hypoxia,stage-only adjustment,2.016,1.117,1.319,1.425
+hypoxia,winsorised at 1%/99%,1.927,1.083,1.332,1.449
+proliferation,mean z-score instead of ssGSEA,1.427,1.367,1.108,1.092
+proliferation,"primary (adjusted, all stages)",1.416,1.28,1.303,1.308
+proliferation,recurrence-free survival,1.674,,,
+proliferation,stage IV excluded,1.416,1.225,1.303,1.327
+proliferation,stage-only adjustment,1.44,1.223,1.258,1.271
+proliferation,winsorised at 1%/99%,1.436,1.291,1.316,1.315

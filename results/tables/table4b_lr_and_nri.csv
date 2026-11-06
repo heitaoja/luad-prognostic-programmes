@@ -1,0 +1,9 @@
+axis,cohort,lr_p,NRI
+proliferation,TCGA-LUAD,0.000892,0.26
+hypoxia,TCGA-LUAD,1.11e-05,0.42
+proliferation,GSE31210,0.049,0.13
+hypoxia,GSE31210,0.000545,0.38
+proliferation,GSE37745,0.0519,0.38
+hypoxia,GSE37745,0.527,-0.13
+proliferation,GSE50081,0.0463,0.69
+hypoxia,GSE50081,0.0723,0.36

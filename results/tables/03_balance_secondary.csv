@@ -1,0 +1,3 @@
+analysis,estimate,lo,hi,p
+"balance = z(proliferation) - z(immune), adjusted",1.21163982064154,1.03614106786429,1.41686407430049,0.0161866699258909
+proliferation x immune interaction p,,,,0.916530799224581
