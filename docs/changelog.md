@@ -22,8 +22,8 @@
 ## 已知的"事后"决策（诚实披露）
 
 1. **四个程序的选择**：候选池是 Hallmark 全集，但具体选这四类，是在 TCGA 里做过一次
-   Hallmark 扫描后才定的。这意味着 TCGA 的效应量有选择偏倚，外部队列合并估计才是干净的。
-   因此正文把外部队列作为主要证据，TCGA 作为发现。
+   Hallmark 扫描后才定的。TCGA 的效应量可能受选择偏倚影响，因此正文以外部合并估计为主要证据，
+   并把 TCGA 用于发现和模型训练。
 2. **分期分层**：是在看到总效应后才做的（探索性），已在 README 中标注。
 3. **互调模型**（四程序同时入模）：在看到单变量结果后补充，用于回应"纯度/共线"质疑，标注为探索性。
 
@@ -36,3 +36,18 @@
 - Moved patient-level derived scores to ignored processed data. Replaced the previous within-cohort incremental analysis and risk reclassification summaries with frozen cohort transport, calibration and paired C-index comparisons.
 - Used a shared assay gene list and within-sample averaging of duplicate features for the final transport analysis. This removes target-cohort mean expression from duplicate-probe preprocessing.
 - Added an independent RNA-seq assessment using pinned CPTAC-LUAD inputs, including separate association estimates and evaluation of TCGA models fitted to the 17,593 comparable genes.
+
+## 2026-11-24 完整发布
+
+以下扩展在初版修订分析审查后完成。历史发现和修订设计的时间顺序见分析方案。[修订分析方案](analysis_plan_v2.md)
+
+| 步骤 | 改动 | 原因和原有证据 |
+|---|---|---|
+| Step 1 | 在相同完整病例上比较吸烟及驱动突变校正，增加驱动基因亚组和样本中心化 z-score | 原分析以分期、年龄、性别为主，TCGA 未中心化的 gene-wise z-score 增殖 HR 为 1.08 |
+| Step 2 | 增加分层 IPD 和纳入 CPTAC 的五队列合并，保留原数组合并表 | 原三队列与四队列 REML-mKH 提供芯片证据，CPTAC 原先单独报告 |
+| Step 3 | 增加 Uno IPCW C 和配对间隔，增加预测子固定的 36 个月基线重校准 | 原冻结迁移以 Harrell C 与完全冻结的绝对风险为主，GSE31210 存在明显高估 |
+| Step 4 | 加入 Wistuba 肺癌 CCP-31 和 Venet meta-PCNA 的关联、条件模型及固定迁移对照 | 原冗余性基准仅包含 MKI67、E2F 和 G2/M |
+| Step 5 | 导出五张组合主图及 30 页签工作簿，保留原单图 | 使新旧分析结果在主图、附图和工作表中可追溯 |
+| Step 6 | 扩写英文手稿和配套文档，增加稿件规模、结构、图注与参考文献检查 | 汇总完整证据，并区分发现、扩展分析、冻结外部验证与目标队列内重校准 |
+
+[英文稿件](manuscript.md) · [图表索引](reporting_crosswalk.md) · [结果工作簿](../results/tables/project_tables.xlsx)

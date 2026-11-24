@@ -2,6 +2,7 @@
 source("R/lib_inputs.R")
 source("R/lib_score.R")
 source("R/lib_surv.R")
+source("R/lib_release_tables.R")
 verify_input_files()
 sets <- programme_sets()
 stopifnot(length(sets) == 14L, length(sets$E2F_TARGETS) == 200L,
@@ -23,14 +24,17 @@ full <- Sys.getenv("LUAD_CORE_ONLY") != "1"
 paths <- c("01_cohort_audit", "01_tcga_participant_flow", "02_axis_definition", "02_gene_coverage",
            "02_paired_specimen_scores", "02_transport_gene_universe", "02_transport_coverage",
            "03c_marker_benchmark", "03c_marker_synthesis", "03c_marker_correlations", "03c_model_diagnostics",
-           "03c_specimen_sensitivity", "03c_purity_sensitivity", "04_cohort_estimates",
-           "04_meta_analysis", "04_leave_one_out", "05_incremental_value", "05_frozen_coefficients",
-           "05_frozen_score_reference", "05_simple_marker_contrasts", "05_calibration",
+           "03c_specimen_sensitivity", "03c_purity_sensitivity", "03d_driver_smoking_adjustment",
+           "03e_published_signature_benchmark", "04_cohort_estimates",
+           "04_meta_analysis", "04_leave_one_out", "04b_ipd_and_pan_external_synthesis",
+           "05_incremental_value", "05_frozen_coefficients",
+           "05_frozen_score_reference", "05_simple_marker_contrasts", "05_calibration", "05c_recalibration",
+           "05d_published_signature_transport",
            "06_random_set_null", "06_permutation_test", "06_sensitivity",
            "table1_cohorts", "table3_meta_analysis", "table4_delta_cindex", "table8_marker_benchmark")
 if (full) {
   paths <- c(paths, paste0("05b_rnaseq_", c("audit", "coverage", "association", "transport",
-             "marker_contrasts", "calibration", "frozen_coefficients", "score_reference")))
+             "marker_contrasts", "calibration", "frozen_coefficients", "score_reference", "recalibration")))
 }
 read_table <- function(x) fread(file.path("results/tables", paste0(x, ".csv")))
 verify_files <- function(files) {
@@ -38,12 +42,108 @@ verify_files <- function(files) {
   if (any(file.size(files) <= 0)) stop("Empty output file")
 }
 verify_files(file.path("results/tables", paste0(paths, ".csv")))
-verify_files(c("results/tables/project_tables.xlsx", "docs/manuscript.md", "docs/analysis_plan_v2.md"))
+verify_files(c("results/tables/project_tables.xlsx", "README.md",
+               file.path("docs", c("manuscript.md", "methods.md", "analysis_plan_v2.md",
+                                   "limitations.md", "reporting_crosswalk.md", "changelog.md"))))
+verify_files("config/published_signatures.csv")
 figures <- c("fig1_cohort_overview", "fig2_axis_distribution", "fig3_forest_all_cohorts",
              "fig4_km_tcga", "fig5_stage_stratified", "fig6_incremental", "fig7_negative_control",
              "fig8_sensitivity", "fig9_marker_benchmark", "fig10_calibration")
 if (full) figures <- c(figures, "fig11_purity_sensitivity", "figS1_rnaseq_validation")
+figures <- c(figures, "Figure1_Cohort_and_Scores", "Figure2_Association_and_IPD_Synthesis",
+             "Figure3_Specificity_Purity_and_Drivers", "Figure4_Redundancy_Benchmark",
+             "Figure5_Calibration_and_Recalibration")
 verify_files(file.path("results/figures", unlist(lapply(figures, paste0, c(".pdf", ".png")))))
+
+verify_manuscript <- function(path, figures) {
+  lines <- readLines(path, encoding = "UTF-8", warn = FALSE)
+  sections <- c("Abstract", "Introduction", "Methods", "Results", "Discussion",
+                "Data and code availability", "Figure Legends", "Supplementary Figure Legends", "References")
+  headings <- setNames(match(paste("##", sections), lines), sections)
+  stopifnot(!anyNA(headings), !is.unsorted(headings, strictly = TRUE))
+  section <- function(name) {
+    start <- headings[[name]]
+    end <- c(headings[headings > start], length(lines) + 1L)[1L]
+    lines[seq.int(start + 1L, end - 1L)]
+  }
+  count_words <- function(x) {
+    prose <- x[!grepl("^#|^\\||^\\*\\*Table [0-9]+\\.", x)]
+    prose <- gsub("\\[[^]]+\\]\\([^)]+\\)", "", prose)
+    prose <- gsub("\\([0-9]+(?:[–, ]+[0-9]+)*\\)", "", prose, perl = TRUE)
+    words <- strsplit(paste(prose, collapse = " "), "[[:space:]]+")[[1L]]
+    sum(grepl("[[:alnum:]]", words))
+  }
+  word_count <- count_words(lines[seq.int(headings[["Abstract"]] + 1L, headings[["Figure Legends"]] - 1L)])
+  abstract <- section("Abstract")
+  abstract_words <- count_words(abstract)
+  results <- section("Results")
+  paragraphs <- function(x) {
+    blocks <- strsplit(paste(x, collapse = "\n"), "\n[[:blank:]]*\n+")[[1L]]
+    sum(nzchar(trimws(blocks)))
+  }
+  intro_paragraphs <- paragraphs(section("Introduction"))
+  stopifnot(word_count >= 4500L, word_count <= 5500L, abstract_words >= 250L, abstract_words <= 300L,
+            identical(sub("^\\*\\*([^.]+)\\..*$", "\\1", grep("^\\*\\*", abstract, value = TRUE)),
+                      c("Background", "Methods", "Results", "Conclusions")),
+            intro_paragraphs %in% 4:5, paragraphs(section("Discussion")) == 6L,
+            identical(sub("^### ([0-9]+)\\..*$", "\\1", grep("^### ", results, value = TRUE)),
+                      as.character(1:6)),
+            sum(grepl("^\\| --- ", results)) >= 1L)
+  caption_assets <- function(x) {
+    links <- grep("]\\(\\.\\./results/figures/[^/]+\\.pdf\\)", x, value = TRUE)
+    sub("^.*]\\(\\.\\./results/figures/([^/]+)\\.pdf\\).*$", "\\1", links)
+  }
+  main <- section("Figure Legends")
+  supplementary <- section("Supplementary Figure Legends")
+  legacy <- unique(c(grep("^fig", figures, value = TRUE), "fig11_purity_sensitivity", "figS1_rnaseq_validation"))
+  stopifnot(identical(sub("^### Figure ([1-5])\\..*$", "\\1", grep("^### Figure ", main, value = TRUE)),
+                      as.character(1:5)),
+            identical(caption_assets(main), grep("^Figure[1-5]_", figures, value = TRUE)),
+            length(caption_assets(supplementary)) == length(legacy),
+            setequal(caption_assets(supplementary), legacy),
+            identical(sub("^### Figure S([0-9]+)\\..*$", "\\1", grep("^### Figure S", supplementary, value = TRUE)),
+                      as.character(seq_along(legacy))))
+  references <- grep("^[0-9]+\\. ", section("References"), value = TRUE)
+  n_references <- length(references)
+  stopifnot(n_references >= 25L, n_references <= 35L,
+            identical(as.integer(sub("\\..*$", "", references)), seq_len(n_references)),
+            all(grepl("]\\(https://(doi\\.org/10\\.[0-9]+/[^[:space:]]+|pubmed\\.ncbi\\.nlm\\.nih\\.gov/[0-9]+/)\\)$",
+                      references)))
+  cat(sprintf("PASS: manuscript (%d prose words, %d abstract words, 5 main and %d supplementary figure legends, %d references)\n",
+              word_count, abstract_words, length(legacy), n_references))
+}
+
+verify_manuscript("docs/manuscript.md", figures)
+
+workbook_path <- "results/tables/project_tables.xlsx"
+sheet_names <- openxlsx::getSheetNames(workbook_path)
+evidence <- release_evidence_sheets(full)
+legacy_sheets <- if (full) 24L else 19L
+stopifnot(length(sheet_names) == legacy_sheets + length(evidence),
+          !anyDuplicated(sheet_names), all(nchar(sheet_names) <= 31L),
+          identical(tail(sheet_names, length(evidence)), names(evidence)))
+for (sheet in names(evidence)) {
+  csv <- read_table(evidence[[sheet]])
+  actual <- openxlsx::read.xlsx(workbook_path, sheet = sheet, skipEmptyRows = FALSE,
+                                skipEmptyCols = FALSE, check.names = FALSE)
+  stopifnot(nrow(actual) == nrow(csv), identical(names(actual), names(csv)))
+  for (column in names(csv)) {
+    expected <- csv[[column]]
+    observed <- actual[[column]]
+    if (all(is.na(expected))) {
+      stopifnot(all(is.na(observed)))
+      next
+    }
+    if (is.character(expected)) {
+      # Blank CSV fields and blank workbook cells both represent missing text.
+      expected[is.na(expected)] <- ""
+      observed[is.na(observed)] <- ""
+    }
+    if (!isTRUE(all.equal(observed, expected, tolerance = 1e-12))) {
+      stop("Workbook sheet differs from ", evidence[[sheet]], ".csv: ", sheet, " / ", column, call. = FALSE)
+    }
+  }
+}
 
 aud <- read_table("01_cohort_audit")
 flow <- read_table("01_tcga_participant_flow")
@@ -95,4 +195,173 @@ stopifnot(nrow(transport) == 5L * (nrow(aud) - 1L), !"TCGA-LUAD" %in% transport$
           all(transport$c_index >= 0 & transport$c_index <= 1),
           all(transport$predicted_36 >= 0 & transport$predicted_36 <= 1))
 stopifnot(all(read_table("06_random_set_null")$empirical_p > 0))
+
+valid_effects <- function(rows) {
+  all(is.finite(rows$HR) & rows$HR > 0 & is.finite(rows$lo) & rows$lo > 0 &
+        rows$lo <= rows$HR & is.finite(rows$hi) & rows$hi >= rows$HR &
+        is.finite(rows$p) & rows$p >= 0 & rows$p <= 1 &
+        rows$events > 0L & rows$events <= rows$n)
+}
+driver_smoking <- read_table("03d_driver_smoking_adjustment")
+stopifnot(identical(names(driver_smoking), c("cohort", "analysis_type", "subgroup_or_model", "exposure",
+                                            "covariates", "n", "events", "HR", "lo", "hi", "p")),
+          nrow(driver_smoking) == (if (full) 60L else 28L),
+          valid_effects(driver_smoking),
+          !anyDuplicated(driver_smoking[, .(cohort, analysis_type, subgroup_or_model, exposure)]))
+adjustment_pairs <- driver_smoking[analysis_type != "driver_subgroup",
+  .(matched = .N == 2L && setequal(subgroup_or_model, c("base_clinical", "extended_adjusted")) &&
+      uniqueN(n) == 1L && uniqueN(events) == 1L), by = .(cohort, analysis_type, exposure)]
+stopifnot(nrow(adjustment_pairs) == (if (full) 20L else 12L),
+          all(adjustment_pairs$matched), all(adjustment_pairs$exposure %in% names(PROGRAMMES)))
+
+score_sensitivity <- read_table("06_sensitivity")[variant %in% c(
+  "Mean gene-wise z-score", "Mean gene-wise z-score (sample-centred)")]
+score_pairs <- score_sensitivity[, .(matched = .N == 2L && uniqueN(variant) == 2L &&
+  uniqueN(n) == 1L && uniqueN(events) == 1L), by = .(cohort, axis)]
+stopifnot(nrow(score_pairs) == 2L * expected_cohorts, all(score_pairs$matched),
+          setequal(score_pairs$cohort, names(p)), all(score_pairs$axis %in% c("proliferation", "hypoxia")),
+          valid_effects(score_sensitivity))
+
+synthesis <- read_table("04b_ipd_and_pan_external_synthesis")
+expected_scopes <- data.table(scope = c("validation_array_k3", "extended_array_k4", "all_external_k5"),
+                              k = c(3L, 4L, 5L), n_total = c(437L, 830L, 935L),
+                              events_total = c(158L, 269L, 292L))
+if (!full) expected_scopes <- expected_scopes[1L]
+ipd_methods <- c("IPD_strata_cohort", "IPD_strata_cohort_stage")
+meta_methods <- c("REML_mKH", "DL_normal")
+expected_rows <- expected_scopes[, {
+  methods <- if (.BY$k == 5L) c(ipd_methods, meta_methods) else ipd_methods
+  CJ(method = methods, axis = names(PROGRAMMES))
+}, by = .(scope, k, n_total, events_total)]
+keys <- names(expected_rows)
+stopifnot(nrow(synthesis) == nrow(expected_rows), fsetequal(synthesis[, ..keys], expected_rows),
+          valid_effects(synthesis[, .(HR = pooled_HR, lo, hi, p, n = n_total, events = events_total)]),
+          all(synthesis[method == "REML_mKH", df] == 4L),
+          all(is.na(synthesis[method != "REML_mKH", df])),
+          all(is.finite(synthesis$p_holm) & synthesis$p_holm >= 0 & synthesis$p_holm <= 1))
+holm <- synthesis[, .(matches = all(abs(p_holm - p.adjust(p, method = "holm")) <= 1e-12)),
+                  by = .(scope, method)]
+pan_meta <- synthesis[method %in% meta_methods]
+stopifnot(all(holm$matches), all(is.finite(pan_meta$I2) & pan_meta$I2 >= 0 & pan_meta$I2 <= 100),
+          all(is.finite(pan_meta$tau2) & pan_meta$tau2 >= 0), all(is.finite(pan_meta$Q) & pan_meta$Q >= 0))
+
+verify_transport_extension <- function(evaluation, calibration, recalibration) {
+  recal_fields <- c("recal_H0_36", "recal_predicted_36", "recal_brier_36", "recal_brier_gain_36")
+  appended <- c("uno_c", "delta_uno_c", "delta_uno_lo", "delta_uno_hi", recal_fields)
+  probability <- function(x) all(is.finite(x) & x >= 0 & x <= 1)
+  clinical <- evaluation[model == "clinical"]
+  baseline <- match(evaluation$cohort, clinical$cohort)
+  models <- c("clinical", "composite", "MKI67", "E2F", "G2M")
+  model_checks <- evaluation[, .(complete = setequal(model, models)), by = cohort]
+  stopifnot(identical(tail(names(evaluation), length(appended)), appended),
+            !anyDuplicated(evaluation[, .(cohort, model)]), all(model_checks$complete),
+            probability(evaluation$uno_c),
+            all(abs(evaluation$delta_uno_c - (evaluation$uno_c - clinical$uno_c[baseline])) <= 1e-12),
+            all(evaluation$delta_uno_lo >= -1 & evaluation$delta_uno_hi <= 1 &
+                  evaluation$delta_uno_lo <= evaluation$delta_uno_hi),
+            all(clinical$delta_uno_lo == 0 & clinical$delta_uno_hi == 0))
+  eligible <- evaluation$events_36 >= 10L & evaluation$n_at_risk_36 >= 10L
+  active <- evaluation[eligible]
+  gain <- clinical$recal_brier_36[baseline[eligible]] - active$recal_brier_36
+  stopifnot(all(is.na(evaluation[!eligible, ..recal_fields])),
+            all(is.finite(active$recal_H0_36) & active$recal_H0_36 > 0),
+            probability(active$recal_predicted_36), probability(active$recal_brier_36),
+            all(abs(active$recal_brier_gain_36 - gain) <= 1e-12))
+
+  fields <- names(calibration)
+  shared <- setdiff(fields, "predicted")
+  frozen <- recalibration[calibration_type == "frozen", ..fields]
+  updated <- recalibration[calibration_type == "baseline_recalibrated", ..fields]
+  stopifnot(identical(names(recalibration), c(fields, "calibration_type")),
+            nrow(recalibration) == 2L * nrow(calibration), identical(frozen, calibration),
+            identical(updated[, ..shared], calibration[, ..shared]),
+            probability(updated$predicted),
+            all(updated$n > 0L & updated$at_risk >= 0L & updated$at_risk <= updated$n))
+  at_horizon <- updated[at_risk > 0L]
+  stopifnot(probability(at_horizon$observed), probability(at_horizon$observed_lo),
+            probability(at_horizon$observed_hi),
+            all(at_horizon$observed_lo <= at_horizon$observed & at_horizon$observed <= at_horizon$observed_hi))
+  totals <- updated[, .(quartiles = .N == 4L && setequal(group, 1:4),
+                        n = sum(n), at_risk = sum(at_risk), predicted = weighted.mean(predicted, n)),
+                    by = .(cohort, model)]
+  expected <- active[model %in% c("clinical", "composite")]
+  stopifnot(all(totals$quartiles),
+            fsetequal(totals[, .(cohort, model, n, at_risk)], expected[, .(cohort, model, n, at_risk = n_at_risk_36)]),
+            all(abs(totals$predicted - expected[totals, on = .(cohort, model), recal_predicted_36]) <= 1e-12))
+}
+verify_transport_extension(transport, read_table("05_calibration"), read_table("05c_recalibration"))
+if (full) {
+  verify_transport_extension(cptac_transport, read_table("05b_rnaseq_calibration"),
+                             read_table("05b_rnaseq_recalibration"))
+}
+gse31210 <- transport[cohort == "GSE31210"]
+stopifnot(nrow(gse31210) == 5L, all(gse31210$recal_brier_36 < gse31210$brier_36),
+          all(abs(gse31210$recal_predicted_36 - gse31210$observed_36) < 0.01),
+          all(abs(gse31210$recal_predicted_36 - gse31210$observed_36) <
+                abs(gse31210$predicted_36 - gse31210$observed_36)))
+
+source("R/lib_published_signatures.R")
+signatures <- read_published_signatures()
+stopifnot(all(c("CDC2", "CENPM", "SKA1") %in% signatures$CCP_31), "PCNA" %in% signatures$meta_PCNA,
+          identical(match_published_signatures(c("SKA3", "SKA1"), list(test = "C18orf24"))$test, "SKA1"))
+verify_published_coverage <- function(rows) {
+  minimum <- ifelse(rows$signature_id == "meta_PCNA", 0.85, 0.8)
+  stopifnot(all(rows$n_in_set == lengths(signatures)[rows$signature_id]),
+            all(rows$n_found <= rows$n_in_set), all(rows$coverage >= minimum & rows$coverage <= 1),
+            all(abs(rows$coverage - rows$n_found / rows$n_in_set) <= 1e-12))
+}
+benchmark <- read_table("03e_published_signature_benchmark")
+model_keys <- rbindlist(lapply(names(signatures), function(id)
+  data.table(signature_id = id,
+             model = c("clinical_plus_marker", paste0("composite_given_", id), paste0(id, "_given_composite")),
+             exposure = c(id, "proliferation", id))))
+model_keys <- model_keys[, .(scoring = PUBLISHED_ASSOCIATION_SCORES), by = .(signature_id, model, exposure)]
+key <- names(model_keys)
+cohort_rows <- benchmark[scope == "cohort"]
+pooled_rows <- benchmark[scope != "cohort"]
+cohort_counts <- aud[, .(cohort, n = n_complete, events = events_complete)]
+if (full) {
+  cohort_counts <- rbind(cohort_counts, cptac[, .(cohort, n = complete_cases, events = complete_case_deaths)])
+}
+pool_counts <- expected_scopes[, .(scope = c("validation", "extended", "all_external_k5")[k - 2L],
+                                    k, n = n_total, events = events_total)]
+pool_counts <- pool_counts[, .(method = c("REML_mKH", "DL_normal", "IPD_strata_cohort")),
+                            by = .(scope, k, n, events)]
+groups <- benchmark[, .(complete = .N == nrow(model_keys) && fsetequal(.SD, model_keys)),
+                     by = .(cohort, scope, method), .SDcols = key]
+stopifnot(valid_effects(benchmark), all(groups$complete), all(cohort_rows$method == "Cox" & cohort_rows$k == 1L),
+          fsetequal(unique(cohort_rows[, .(cohort, n, events)]), cohort_counts),
+          fsetequal(unique(pooled_rows[, .(scope, k, n, events, method)]), pool_counts),
+          nrow(benchmark) == nrow(model_keys) * (nrow(cohort_counts) + nrow(pool_counts)),
+          all(is.finite(cohort_rows$spearman) & abs(cohort_rows$spearman) <= 1))
+verify_published_coverage(cohort_rows)
+
+published_transport <- read_table("05d_published_signature_transport")
+external <- cohort_counts[cohort != "TCGA-LUAD"]
+expected <- CJ(cohort = external$cohort, signature_id = names(signatures), scoring = PUBLISHED_TRANSPORT_SCORES)
+key <- names(expected)
+verify_published_coverage(published_transport)
+sharing <- nrow(read_table("02_transport_gene_universe"))
+universes <- rep(sharing, nrow(published_transport))
+original_transport <- transport
+if (full) {
+  stopifnot(sharing == 17595L, cptac$original_genes_measured == 17593L)
+  universes[published_transport$cohort == "CPTAC-LUAD"] <- cptac$original_genes_measured
+  original_transport <- rbind(transport, cptac_transport)
+}
+clinical <- original_transport[model == "clinical"][published_transport, on = "cohort", .(c_index, uno_c)]
+composite <- original_transport[model == "composite"][published_transport, on = "cohort", c_index]
+probabilities <- published_transport[, .(c_index, uno_c, brier_36, recal_brier_36)]
+stopifnot(nrow(published_transport) == nrow(expected), fsetequal(published_transport[, ..key], expected),
+          all(published_transport$model == paste(published_transport$signature_id, published_transport$scoring, sep = "_")),
+          all(published_transport$n_genes_universe == universes),
+          fsetequal(unique(published_transport[, .(cohort, n, events)]), external),
+          all(vapply(probabilities, function(x) all(is.finite(x) & x >= 0 & x <= 1), logical(1))),
+          all(abs(published_transport$clinical_c_index - clinical$c_index) <= 1e-12),
+          all(abs(published_transport$composite_c_index - composite) <= 1e-12),
+          all(abs(published_transport$delta_c - (published_transport$c_index - clinical$c_index)) <= 1e-12),
+          all(abs(published_transport$delta_uno_c - (published_transport$uno_c - clinical$uno_c)) <= 1e-12),
+          all(abs(published_transport$composite_delta_c - (composite - published_transport$c_index)) <= 1e-12),
+          all(published_transport$composite_delta_lo >= -1 & published_transport$composite_delta_hi <= 1 &
+                published_transport$composite_delta_lo <= published_transport$composite_delta_hi))
 cat("PASS: pinned inputs, scoring, synthesis, participant flow, model transport and release outputs\n")

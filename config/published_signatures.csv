@@ -1,0 +1,163 @@
+signature_id,display_name,citation,gene_symbol
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,ASPM
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,CDCA8
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,MCM10
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,FOXM1
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,CDC20
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,CDKN3
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,BIRC5
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,DLGAP5
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,KIF20A
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,BUB1B
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,PRC1
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,TK1
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,CEP55
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,PBK
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,RAD54L
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,NUSAP1
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,RRM2
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,KIAA0101
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,ORC6L
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,RAD51
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,CENPM
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,SKA1
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,CENPF
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,KIF11
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,PTTG1
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,CDC2
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,DTL
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,PLK1
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,CDCA3
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,ASF1B
+CCP_31,Cell Cycle Progression (31 genes),Wistuba et al. Clin Cancer Res 2013 Supplementary Table S1. doi:10.1158/1078-0432.CCR-13-0596,TOP2A
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,PCNA
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,CKS2
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,NUSAP1
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,RRM2
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,ZWINT
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,PRC1
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,TFDP1
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,CCNA2
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,CCNB1
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,MELK
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,TPX2
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,BIRC5
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,NCAPG2
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,RFWD3
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,TACC3
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,CDC2
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,KIAA0101
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,MCM2
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,MCM5
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,ASF1B
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,CCNB2
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,GTPBP2
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,KIF20A
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,PTTG1
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,AURKA
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,CDC20
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,DKFZp762E1312
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,FOXM1
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,GINS2
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,MAD2L1
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,UBE2C
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,GINS1
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,MCM6
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,NCAPD2
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,NUP37
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,CKS1B
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,LOC146909
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,MCM7
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,ARID3A
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,AURKB
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,CDCA8
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,SNRPD1
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,TROAP
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,C21orf45
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,DDX39
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,ERAF
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,ESPL1
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,HMBS
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,LSM6
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,MCM4
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,NCAPD3
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,PPIH
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,CDC45L
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,DTL
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,EPB42
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,HMGN2
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,MCM3
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,PF4
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,PPBP
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,RFC4
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,TOP2A
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,BUB1B
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,CDT1
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,FEN1
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,GATA1
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,GYPB
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,HMGB2
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,KIF22
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,KLF1
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,MLF1IP
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,RFC3
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,RHCE
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,TAL1
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,TCF3
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,ALAS2
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,BZRPL1
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,CDCA3
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,CENPA
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,CKLF
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,GTSE1
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,NFE2
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,OIP5
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,SHCBP1
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,SNF8
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,SNRPB
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,SPTA1
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,KEL
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,KIF2C
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,LYL1
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,PSMD9
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,RACGAP1
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,RPIA
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,TIMELESS
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,TRMT5
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,TYMS
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,VRK1
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,FBXO7
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,H3F3A
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,NUDT1
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,PLEK
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,POLE2
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,RHAG
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,WHSC1
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,APOBEC3B
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,BPGM
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,CHAF1A
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,DNAJC9
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,FBXO5
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,KIF4A
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,KLF15
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,MKI67
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,PGD
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,RPA3
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,SFRS2
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,TRIM58
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,ADAMTS13
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,CDCA4
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,CDKN3
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,FECH
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,LBR
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,LIG1
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,LMNB1
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,MICB
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,NUP210
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,ORC6L
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,RAD51AP1
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,RHD
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,SMC4
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,GYPA
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,RPP30
+meta_PCNA,meta-PCNA (131 genes),Venet et al. PLoS Comput Biol 2011 Table S1. doi:10.1371/journal.pcbi.1002240.s002,TRIM10

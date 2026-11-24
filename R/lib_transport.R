@@ -2,7 +2,7 @@
 TRANSPORT_MARKERS <- c(composite = "proliferation", MKI67 = "MKI67", E2F = "e2f", G2M = "g2m")
 TRANSPORT_CLINICAL <- c("stage", "age_10", "sex")
 
-transport_design <- function(data, reference, mki67_reference) {
+transport_design <- function(data, reference, mki67_reference, extra_reference = NULL) {
   d <- data$clin
   stopifnot(identical(d$sample, rownames(data$scores)))
   molecular <- programme_scores(data$scores, reference)$scores
@@ -11,15 +11,22 @@ transport_design <- function(data, reference, mki67_reference) {
   d$stage <- factor(d$stage, levels = c("I", "II", "III", "IV"))
   d$sex <- factor(d$sex, levels = c("female", "male"))
   d$age_10 <- (d$age - 65) / 10
-  fields <- c("os_time", "os_event", TRANSPORT_CLINICAL, TRANSPORT_MARKERS)
+  if (length(extra_reference)) {
+    stopifnot(identical(rownames(data$extra_scores), d$sample),
+              all(names(extra_reference) %in% colnames(data$extra_scores)))
+    for (feature in names(extra_reference))
+      d[[feature]] <- standardise(data$extra_scores[, feature], extra_reference[[feature]])
+  }
+  fields <- c("os_time", "os_event", TRANSPORT_CLINICAL, TRANSPORT_MARKERS, names(extra_reference))
   d[complete.cases(d[, fields]), ]
 }
 
-fit_frozen_transport <- function(train, horizon = 36) {
+fit_frozen_transport <- function(train, horizon = 36, markers = TRANSPORT_MARKERS) {
   reference <- programme_scores(train$scores)$reference
   mki67_reference <- z_parameters(train$mki67_quantile)
-  training <- transport_design(train, reference, mki67_reference)
-  fits <- lapply(c(clinical = "", TRANSPORT_MARKERS), function(feature) {
+  extra_reference <- lapply(as.data.frame(train$extra_scores), z_parameters)
+  training <- transport_design(train, reference, mki67_reference, extra_reference)
+  fits <- lapply(c(clinical = "", markers), function(feature) {
     formula <- reformulate(c(TRANSPORT_CLINICAL, feature[nzchar(feature)]),
                            response = "Surv(os_time, os_event)")
     coxph(formula, data = training, singular.ok = FALSE, x = TRUE)
@@ -29,7 +36,7 @@ fit_frozen_transport <- function(train, horizon = 36) {
     c(0, hazard$hazard)[1L + findInterval(horizon, hazard$time)]
   }, numeric(1))
   list(fits = fits, reference = reference, mki67_reference = mki67_reference,
-       horizon = horizon, baseline = baseline)
+       horizon = horizon, baseline = baseline, extra_reference = extra_reference)
 }
 
 transport_coefficients <- function(model) {
@@ -51,8 +58,8 @@ transport_score_reference <- function(model) {
   ))
 }
 
-c_value <- function(time, status, lp) {
-  survival::concordance(Surv(time, status) ~ lp, reverse = TRUE)$concordance
+c_value <- function(time, status, lp, timewt = "n") {
+  survival::concordance(Surv(time, status) ~ lp, reverse = TRUE, timewt = timewt)$concordance
 }
 
 ipcw_weights <- function(d, horizon) {
@@ -71,32 +78,50 @@ ipcw_weights <- function(d, horizon) {
   list(event = event, weights = weights)
 }
 
-evaluate_frozen_transport <- function(model, data, cohort, B = 1000L) {
-  d <- transport_design(data, model$reference, model$mki67_reference)
+evaluate_frozen_transport <- function(model, data, cohort, B = 1000L,
+                                      comparisons = c("MKI67", "E2F", "G2M")) {
+  d <- transport_design(data, model$reference, model$mki67_reference, model$extra_reference)
   fits <- model$fits
   horizon <- model$horizon
   lp <- vapply(fits, predict, numeric(nrow(d)), newdata = d, type = "lp", reference = "zero")
   risk <- -expm1(-sweep(exp(lp), 2L, model$baseline, "*"))
-  c_index <- apply(lp, 2L, function(x) c_value(d$os_time, d$os_event, x))
-  boot <- replicate(B, {
-    i <- sample.int(nrow(d), replace = TRUE)
-    apply(lp[i, , drop = FALSE], 2L, function(x) c_value(d$os_time[i], d$os_event[i], x))
-  })
+  concordance_by_model <- function(i, timewt = "n") {
+    apply(lp[i, , drop = FALSE], 2L, function(x) c_value(d$os_time[i], d$os_event[i], x, timewt))
+  }
+  patients <- seq_len(nrow(d))
+  c_index <- concordance_by_model(patients)
+  uno_c <- concordance_by_model(patients, "n/G2")
+  draws <- replicate(B, sample.int(nrow(d), replace = TRUE))
+  boot <- apply(draws, 2L, concordance_by_model)
+  uno_boot <- apply(draws, 2L, concordance_by_model, timewt = "n/G2")
   events_36 <- sum(d$os_event == 1L & d$os_time <= horizon)
   n_at_risk <- sum(d$os_time >= horizon)
   early_censored <- sum(d$os_event == 0L & d$os_time <= horizon)
   observed <- NA_real_
   brier <- setNames(rep(NA_real_, length(fits)), names(fits))
+  recal_h0 <- brier
+  recal_brier <- brier
+  recal_risk <- risk * NA_real_
   if (events_36 >= 10L && n_at_risk >= 10L) {
     km <- survfit(Surv(os_time, os_event) ~ 1, data = d)
     observed <- 1 - summary(km, times = horizon)$surv
     weight <- ipcw_weights(d, horizon)
     brier <- colMeans(weight$weights * (risk - weight$event)^2)
+    recal_h0 <- vapply(names(fits), function(m) {
+      d$lp <- lp[, m]
+      fit_recal <- coxph(Surv(os_time, os_event) ~ offset(lp), data = d)
+      # basehaz() recentres offsets unless the reference is supplied explicitly.
+      hazard <- basehaz(fit_recal, newdata = data.frame(lp = 0), centered = FALSE)
+      c(0, hazard$hazard)[1L + findInterval(horizon, hazard$time)]
+    }, numeric(1))
+    recal_risk <- -expm1(-sweep(exp(lp), 2L, recal_h0, "*"))
+    recal_brier <- colMeans(weight$weights * (recal_risk - weight$event)^2)
   }
   c_interval <- function(x) quantile(x, c(.025, .975), na.rm = TRUE)
   evaluation <- rbindlist(lapply(names(fits), function(m) {
     c_ci <- c_interval(boot[m, ])
     delta_ci <- c_interval(boot[m, ] - boot["clinical", ])
+    delta_uno_ci <- c_interval(uno_boot[m, ] - uno_boot["clinical", ])
     d$lp <- lp[, m]
     slope <- coxph(Surv(os_time, os_event) ~ lp, data = d)
     slope_ci <- confint(slope)["lp", ]
@@ -109,16 +134,22 @@ evaluate_frozen_transport <- function(model, data, cohort, B = 1000L) {
                calibration_slope = coef(slope)[["lp"]],
                slope_lo = slope_ci[1L], slope_hi = slope_ci[2L],
                predicted_36 = mean(risk[, m]), observed_36 = observed,
-               brier_36 = brier[[m]], brier_gain_36 = brier[["clinical"]] - brier[[m]])
+               brier_36 = brier[[m]], brier_gain_36 = brier[["clinical"]] - brier[[m]],
+               uno_c = uno_c[m], delta_uno_c = uno_c[m] - uno_c["clinical"],
+               delta_uno_lo = delta_uno_ci[1L], delta_uno_hi = delta_uno_ci[2L],
+               recal_H0_36 = recal_h0[[m]], recal_predicted_36 = mean(recal_risk[, m]),
+               recal_brier_36 = recal_brier[[m]],
+               recal_brier_gain_36 = recal_brier[["clinical"]] - recal_brier[[m]])
   }))
-  contrasts <- rbindlist(lapply(c("MKI67", "E2F", "G2M"), function(m) {
+  contrasts <- rbindlist(lapply(comparisons, function(m) {
     ci <- c_interval(boot["composite", ] - boot[m, ])
     data.frame(cohort = cohort, comparison = m, delta_c = c_index["composite"] - c_index[m],
                delta_lo = ci[1L], delta_hi = ci[2L])
   }))
   calibration <- data.table(cohort = character(), model = character(), group = integer(),
                             n = integer(), at_risk = integer(), predicted = numeric(),
-                            observed = numeric(), observed_lo = numeric(), observed_hi = numeric())
+                            observed = numeric(), observed_lo = numeric(), observed_hi = numeric(),
+                            recal_predicted = numeric())
   if (is.finite(observed)) {
     calibration <- rbindlist(lapply(c("clinical", "composite"), function(m) {
       breaks <- unique(quantile(risk[, m], seq(0, 1, length.out = 5)))
@@ -132,9 +163,17 @@ evaluate_frozen_transport <- function(model, data, cohort, B = 1000L) {
                    at_risk = sum(keep & d$os_time >= horizon), predicted = mean(risk[keep, m]),
                    observed = if (length(surv$surv)) 1 - surv$surv else NA_real_,
                    observed_lo = if (length(surv$upper)) 1 - surv$upper else NA_real_,
-                   observed_hi = if (length(surv$lower)) 1 - surv$lower else NA_real_)
+                   observed_hi = if (length(surv$lower)) 1 - surv$lower else NA_real_,
+                   recal_predicted = mean(recal_risk[keep, m]))
       }))
     }))
   }
-  list(evaluation = evaluation, contrasts = contrasts, calibration = calibration)
+  # Both risks rank the same frozen LP, so use identical groups for the two curves.
+  recalibrated <- copy(calibration)[, `:=`(predicted = recal_predicted, recal_predicted = NULL)]
+  calibration[, recal_predicted := NULL]
+  recalibration <- rbindlist(list(frozen = calibration, baseline_recalibrated = recalibrated),
+                             idcol = "calibration_type")
+  setcolorder(recalibration, c(names(calibration), "calibration_type"))
+  list(evaluation = evaluation, contrasts = contrasts, calibration = calibration,
+       recalibration = recalibration)
 }

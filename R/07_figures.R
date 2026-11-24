@@ -213,3 +213,6 @@ if (Sys.getenv("LUAD_CORE_ONLY") != "1") {
     title = "Independent RNA-seq evaluation in CPTAC-LUAD", subtitle = subtitle, tag_levels = "A"),
     "figS1_rnaseq_validation", 204, 89)
 }
+
+source("R/lib_main_figures.R")
+write_main_figures(scores, km, draws, null, full = Sys.getenv("LUAD_CORE_ONLY") != "1")

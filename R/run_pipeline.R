@@ -3,13 +3,13 @@ steps <- c("00_setup", "01_load_data", "02_score", "03_tcga_primary",
            "03b_mutual_adjustment", "03c_benchmark", "04_external_meta",
            "05_incremental", "05b_rnaseq_validation", "06_negative_control",
            "07_figures", "08_tables", "99_verify")
-if (Sys.getenv("LUAD_CORE_ONLY") == "1") steps <- setdiff(steps, "05b_rnaseq_validation")
 selected <- commandArgs(trailingOnly = TRUE)
 if (length(selected)) {
   hits <- lapply(selected, function(prefix) steps[startsWith(steps, prefix)])
   if (any(lengths(hits) == 0L)) stop("Unknown step prefix: ", paste(selected[lengths(hits) == 0L], collapse = ", "))
   steps <- steps[steps %in% unlist(hits)]
 }
+if (Sys.getenv("LUAD_CORE_ONLY") == "1") steps <- setdiff(steps, "05b_rnaseq_validation")
 for (d in c("data/processed", "results/logs", "results/objects", "results/tables", "results/figures"))
   dir.create(d, recursive = TRUE, showWarnings = FALSE)
 rscript <- file.path(R.home("bin"), if (.Platform$OS.type == "windows") "Rscript.exe" else "Rscript")

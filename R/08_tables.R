@@ -1,5 +1,6 @@
 # Assemble rounded reporting tables and the full evidence workbook.
 suppressPackageStartupMessages({ library(data.table); library(openxlsx) })
+source("R/lib_release_tables.R")
 tab <- "results/tables"
 read_table <- function(name) fread(file.path(tab, paste0(name, ".csv")))
 write_table <- function(d, name) fwrite(d, file.path(tab, paste0(name, ".csv")))
@@ -55,14 +56,43 @@ if (Sys.getenv("LUAD_CORE_ONLY") != "1") {
   tables[["S14 CPTAC marker contrasts"]] <- read_table("05b_rnaseq_marker_contrasts")
   tables[["S15 CPTAC calibration"]] <- read_table("05b_rnaseq_calibration")
 }
+evidence <- release_evidence_sheets(Sys.getenv("LUAD_CORE_ONLY") != "1")
+for (name in names(evidence)) tables[[name]] <- read_table(evidence[[name]])
 wb <- createWorkbook()
 header <- createStyle(textDecoration = "bold", fgFill = "#DCE6F1", border = "bottom")
+format_evidence_sheet <- function(wb, sheet, data) {
+  widths <- vapply(seq_along(data), function(i) {
+    values <- data[[i]]
+    body <- if (is.character(values)) max(0, nchar(values, type = "width"), na.rm = TRUE) else 9
+    max(body, nchar(names(data)[i], type = "width")) + 3
+  }, numeric(1))
+  setColWidths(wb, sheet, cols = seq_along(data), widths = widths)
+  probability <- intersect(c("p", "p_holm"), names(data))
+  coverage <- intersect("coverage", names(data))
+  decimal <- names(data)[vapply(data, is.double, logical(1))]
+  formats <- list(`0.0000` = setdiff(decimal, c(probability, coverage)),
+                  `[<0.001]0.00E+00;0.000` = probability, `0.0%` = coverage)
+  for (format in names(formats)) {
+    cols <- match(formats[[format]], names(data))
+    if (length(cols) && nrow(data)) {
+      addStyle(wb, sheet, createStyle(numFmt = format), rows = seq_len(nrow(data)) + 1L,
+               cols = cols, gridExpand = TRUE)
+    }
+  }
+}
 for (name in names(tables)) {
   data <- tables[[name]]
-  addWorksheet(wb, name)
+  new_sheet <- name %in% names(evidence)
+  addWorksheet(wb, name, gridLines = !new_sheet)
   writeData(wb, name, data, headerStyle = header, withFilter = nrow(data) > 0L)
-  freezePane(wb, name, firstRow = TRUE)
-  setColWidths(wb, name, cols = seq_len(ncol(data)), widths = "auto")
+  freezePane(wb, name, firstRow = TRUE, firstCol = new_sheet)
+  if (new_sheet) format_evidence_sheet(wb, name, data) else
+    setColWidths(wb, name, cols = seq_len(ncol(data)), widths = "auto")
 }
+# This workbook contains tables only. Remove openxlsx's default drawing links
+# because no drawing parts are written for these worksheets.
+wb$worksheets_rels <- lapply(wb$worksheets_rels, function(relations) {
+  relations[!grepl('/(drawing|vmlDrawing)"', relations)]
+})
 saveWorkbook(wb, file.path(tab, "project_tables.xlsx"), overwrite = TRUE)
 cat("Wrote", length(outputs), "reporting tables and", length(tables), "workbook sheets\n")

@@ -1,0 +1,61 @@
+cohort,analysis_type,subgroup_or_model,exposure,covariates,n,events,HR,lo,hi,p
+TCGA-LUAD,pack_years_adjustment,base_clinical,proliferation,stage + age_z + sex,333,118,1.33152195478643,1.09382610514256,1.6208707286678,0.00431939938769431
+TCGA-LUAD,pack_years_adjustment,extended_adjusted,proliferation,stage + age_z + sex + pack_years_z,333,118,1.33555250821464,1.09582482199583,1.6277241274292,0.00415011195645941
+TCGA-LUAD,pack_years_adjustment,base_clinical,hypoxia,stage + age_z + sex,333,118,1.36898380305537,1.13779311384076,1.64715063769512,0.000875466825025147
+TCGA-LUAD,pack_years_adjustment,extended_adjusted,hypoxia,stage + age_z + sex + pack_years_z,333,118,1.36910524717016,1.13792542856642,1.64725133191753,0.000870964485624351
+TCGA-LUAD,pack_years_adjustment,base_clinical,emt_stroma,stage + age_z + sex,333,118,1.08569442087434,0.914445220711844,1.28901365420236,0.347846080013448
+TCGA-LUAD,pack_years_adjustment,extended_adjusted,emt_stroma,stage + age_z + sex + pack_years_z,333,118,1.08576725505449,0.914235508403376,1.28948232847286,0.348284704015722
+TCGA-LUAD,pack_years_adjustment,base_clinical,immune,stage + age_z + sex,333,118,0.980965208454209,0.816830425545205,1.17808141090645,0.837015230516988
+TCGA-LUAD,pack_years_adjustment,extended_adjusted,immune,stage + age_z + sex + pack_years_z,333,118,0.980540706542294,0.815978719860439,1.17829062668559,0.833943195616975
+GSE31210,smoking_driver_adjustment,base_clinical,proliferation,stage + age_z + sex,204,30,1.41890771993225,1.01299034878227,1.98748104570153,0.0418475955940374
+GSE31210,smoking_driver_adjustment,extended_adjusted,proliferation,stage + age_z + sex + smoking_ever + driver_group,204,30,1.38192777357171,0.979894972520466,1.94890720426569,0.0651574802680169
+GSE31210,smoking_driver_adjustment,base_clinical,hypoxia,stage + age_z + sex,204,30,1.9594398676565,1.32581854881291,2.89587485285931,0.00073805273067773
+GSE31210,smoking_driver_adjustment,extended_adjusted,hypoxia,stage + age_z + sex + smoking_ever + driver_group,204,30,2.03137195552614,1.37495789976044,3.00116245189548,0.000372223069742723
+GSE31210,smoking_driver_adjustment,base_clinical,emt_stroma,stage + age_z + sex,204,30,1.33989406601331,0.91240130698493,1.96768252565352,0.135602152949712
+GSE31210,smoking_driver_adjustment,extended_adjusted,emt_stroma,stage + age_z + sex + smoking_ever + driver_group,204,30,1.34794212643179,0.906284484656774,2.00483182374855,0.14044490301707
+GSE31210,smoking_driver_adjustment,base_clinical,immune,stage + age_z + sex,204,30,1.36360489346725,0.975608070874179,1.90590705530113,0.0694607223003174
+GSE31210,smoking_driver_adjustment,extended_adjusted,immune,stage + age_z + sex + smoking_ever + driver_group,204,30,1.34592339676043,0.959479627807529,1.88801277009554,0.0853561169885386
+GSE50081,smoking_adjustment,base_clinical,proliferation,stage + age_z + sex,115,46,1.20220101935757,0.917802721356593,1.57472543642944,0.181170525730405
+GSE50081,smoking_adjustment,extended_adjusted,proliferation,stage + age_z + sex + smoking_ever,115,46,1.1860085348848,0.897756713280275,1.56681228222735,0.229836104236907
+GSE50081,smoking_adjustment,base_clinical,hypoxia,stage + age_z + sex,115,46,1.25243351321892,0.910785733780261,1.72223789510115,0.166059354391059
+GSE50081,smoking_adjustment,extended_adjusted,hypoxia,stage + age_z + sex + smoking_ever,115,46,1.24970388358611,0.910495968440537,1.71528469184231,0.167702374300632
+GSE50081,smoking_adjustment,base_clinical,emt_stroma,stage + age_z + sex,115,46,1.07814919524701,0.753969221506762,1.54171503829927,0.680078047438369
+GSE50081,smoking_adjustment,extended_adjusted,emt_stroma,stage + age_z + sex + smoking_ever,115,46,1.09106222817543,0.761914915263756,1.56240121029661,0.634280850089227
+GSE50081,smoking_adjustment,base_clinical,immune,stage + age_z + sex,115,46,1.19335761753868,0.853419820466874,1.66870087755699,0.301428177019107
+GSE50081,smoking_adjustment,extended_adjusted,immune,stage + age_z + sex + smoking_ever,115,46,1.18606989477364,0.851589732622954,1.65192432623093,0.312712380426525
+GSE72094,smoking_adjustment,base_clinical,proliferation,stage + age_z + sex,328,89,1.45858792729078,1.1920929975889,1.78465836637026,0.000245517981766722
+GSE72094,smoking_adjustment,extended_adjusted,proliferation,stage + age_z + sex + smoking_ever,328,89,1.46231592586203,1.19412000051724,1.79074788639625,0.000236796276367568
+GSE72094,smoking_adjustment,base_clinical,hypoxia,stage + age_z + sex,328,89,1.39110592617306,1.11747614090021,1.73173782151167,0.0031378430276984
+GSE72094,smoking_adjustment,extended_adjusted,hypoxia,stage + age_z + sex + smoking_ever,328,89,1.39102418431459,1.11737123625285,1.73169687796599,0.00314801846281351
+GSE72094,smoking_adjustment,base_clinical,emt_stroma,stage + age_z + sex,328,89,1.06965410987593,0.863150870427378,1.32556190809141,0.538380340969423
+GSE72094,smoking_adjustment,extended_adjusted,emt_stroma,stage + age_z + sex + smoking_ever,328,89,1.07047856706082,0.863397577881549,1.3272267514906,0.534664683206849
+GSE72094,smoking_adjustment,base_clinical,immune,stage + age_z + sex,328,89,1.00049656703567,0.812472324367103,1.23203381903488,0.996270601627178
+GSE72094,smoking_adjustment,extended_adjusted,immune,stage + age_z + sex + smoking_ever,328,89,1.00029881316706,0.812232453246613,1.23191053450756,0.997756629632894
+GSE72094,driver_adjustment,base_clinical,proliferation,stage + age_z + sex,393,111,1.35738760420375,1.1343384548074,1.62429572958349,0.000849297317755409
+GSE72094,driver_adjustment,extended_adjusted,proliferation,stage + age_z + sex + egfr + kras + tp53 + stk11,393,111,1.37718005006289,1.12736023368356,1.68235922611368,0.00172546188490287
+GSE72094,driver_adjustment,base_clinical,hypoxia,stage + age_z + sex,393,111,1.36052098108655,1.12311870476548,1.64810481040224,0.00165113460833132
+GSE72094,driver_adjustment,extended_adjusted,hypoxia,stage + age_z + sex + egfr + kras + tp53 + stk11,393,111,1.30131826495577,1.06887457247477,1.58431051717014,0.00870561766210978
+GSE72094,driver_adjustment,base_clinical,emt_stroma,stage + age_z + sex,393,111,1.06739955224628,0.882979500941778,1.29033777445609,0.50032488601743
+GSE72094,driver_adjustment,extended_adjusted,emt_stroma,stage + age_z + sex + egfr + kras + tp53 + stk11,393,111,1.0289826962957,0.85291254311198,1.24139971656737,0.765409985972229
+GSE72094,driver_adjustment,base_clinical,immune,stage + age_z + sex,393,111,0.929914151429431,0.776445984546696,1.11371601661843,0.429759723405325
+GSE72094,driver_adjustment,extended_adjusted,immune,stage + age_z + sex + egfr + kras + tp53 + stk11,393,111,0.896936840416116,0.748406943649262,1.07494418981857,0.238969491934034
+GSE31210,driver_subgroup,EGFR mutant,proliferation,stage + age_z + sex,116,12,2.1006389804603,1.09615096208009,4.02561716303715,0.0253124820350625
+GSE31210,driver_subgroup,EGFR mutant,hypoxia,stage + age_z + sex,116,12,1.91229827708949,1.00308390819075,3.64564187571836,0.0489166587314965
+GSE31210,driver_subgroup,Wild-type / triple-negative,proliferation,stage + age_z + sex,62,14,1.51626500567289,0.94287760463445,2.43834359425639,0.0859246103842206
+GSE31210,driver_subgroup,Wild-type / triple-negative,hypoxia,stage + age_z + sex,62,14,2.42797797123409,1.40105122696015,4.20760991130103,0.00156668068687389
+GSE72094,driver_subgroup,EGFR mut,proliferation,"stage + age_z + sex (ridge on stage and sex, theta = 1)",41,4,1.22106525952287,0.360179180202094,4.1396073120525,0.748490019080183
+GSE72094,driver_subgroup,EGFR mut,hypoxia,"stage + age_z + sex (ridge on stage and sex, theta = 1)",41,4,2.74830473425328,0.406376627838363,18.5866469548128,0.299904219899494
+GSE72094,driver_subgroup,EGFR wt,proliferation,stage + age_z + sex,352,107,1.31303687313638,1.09400304969436,1.5759241536826,0.00344627786028146
+GSE72094,driver_subgroup,EGFR wt,hypoxia,stage + age_z + sex,352,107,1.30785728751075,1.07820590608273,1.58642303371293,0.00644426446242114
+GSE72094,driver_subgroup,KRAS mut,proliferation,stage + age_z + sex,138,47,1.22121539433037,0.881876065757827,1.69112996401359,0.22891087779328
+GSE72094,driver_subgroup,KRAS mut,hypoxia,stage + age_z + sex,138,47,1.30319568317581,0.940250458843068,1.80624106340535,0.111824195532259
+GSE72094,driver_subgroup,KRAS wt,proliferation,stage + age_z + sex,255,64,1.40670566159386,1.12476179954698,1.75932434685924,0.00278823313724522
+GSE72094,driver_subgroup,KRAS wt,hypoxia,stage + age_z + sex,255,64,1.39736807353545,1.07627849226304,1.8142493294932,0.0120115271205285
+GSE72094,driver_subgroup,TP53 mut,proliferation,stage + age_z + sex,95,30,1.23183918948925,0.867065460671295,1.75007292711986,0.244503391791245
+GSE72094,driver_subgroup,TP53 mut,hypoxia,stage + age_z + sex,95,30,1.49836295355609,0.950924842762702,2.36095581861834,0.0813235444658027
+GSE72094,driver_subgroup,TP53 wt,proliferation,stage + age_z + sex,298,81,1.46035596500047,1.15443969891552,1.84733732434518,0.00159171119142336
+GSE72094,driver_subgroup,TP53 wt,hypoxia,stage + age_z + sex,298,81,1.41347330492495,1.13437565982334,1.76123911548543,0.00204657732962021
+GSE72094,driver_subgroup,STK11 mut,proliferation,stage + age_z + sex,64,18,0.840382453465742,0.479525795001452,1.47279390484293,0.543530256694815
+GSE72094,driver_subgroup,STK11 mut,hypoxia,stage + age_z + sex,64,18,0.8894217868756,0.522247610989422,1.51474338670552,0.666197146205611
+GSE72094,driver_subgroup,STK11 wt,proliferation,stage + age_z + sex,329,93,1.42715877532911,1.17870342881766,1.72798527619619,0.000267664823165278
+GSE72094,driver_subgroup,STK11 wt,hypoxia,stage + age_z + sex,329,93,1.41160869387238,1.14986031404723,1.73294014957564,0.000986124056131255

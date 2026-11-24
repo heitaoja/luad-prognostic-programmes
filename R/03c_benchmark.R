@@ -114,3 +114,102 @@ if (file.exists(purity_file) && Sys.getenv("LUAD_CORE_ONLY") != "1") {
 }
 fwrite(purity_out, file.path(tab, "03c_purity_sensitivity.csv"))
 cat("Matched clinical benchmark, model diagnostics and alternate specimen analyses written\n")
+
+adjustment_row <- function(d, a, covars, id, analysis_type, label, penalise = FALSE) {
+  terms <- paste(covars, collapse = " + ")
+  if (penalise) {
+    stage_sex <- model.matrix(~ stage + sex, data = d)[, -1L, drop = FALSE]
+    f <- reformulate(c(a, "age_z", "ridge(stage_sex, theta = 1, scale = FALSE)"),
+                     response = "Surv(os_time, os_event)")
+    fit <- coxph(f, data = d)
+    ci <- exp(confint(fit)[a, ])
+    row <- data.frame(n = fit$n, events = fit$nevent, HR = unname(exp(coef(fit)[a])),
+                      lo = ci[1L], hi = ci[2L], p = summary(fit)$coefficients[a, "p"])
+    terms <- paste0(terms, " (ridge on stage and sex, theta = 1)")
+  } else {
+    row <- cox_row(d, a, covars)
+  }
+  data.frame(cohort = id, analysis_type = analysis_type, subgroup_or_model = label,
+             exposure = a, covariates = terms, row[c("n", "events", "HR", "lo", "hi", "p")])
+}
+
+paired_adjustment <- function(d, id, analysis_type, extra) {
+  d <- complete_data(d, c(axes, extra))
+  rbindlist(lapply(axes, function(a) {
+    rbind(adjustment_row(d, a, clinical, id, analysis_type, "base_clinical"),
+          adjustment_row(d, a, c(clinical, extra), id, analysis_type, "extended_adjusted"))
+  }))
+}
+
+subgroup_axes <- c("proliferation", "hypoxia")
+driver_subgroup <- function(d, id, field, status, label) {
+  d <- complete_data(d, subgroup_axes)
+  d <- droplevels(d[d[[field]] %in% status, ])
+  deaths <- d$os_event == 1L
+  # Event-free stage or sex categories can cause separation, as in EGFR-mutant GSE72094.
+  penalise <- !all(d$stage %in% d$stage[deaths]) || !all(d$sex %in% d$sex[deaths])
+  rbindlist(lapply(subgroup_axes, function(a)
+    adjustment_row(d, a, clinical, id, "driver_subgroup", label, penalise)))
+}
+
+# Any source label outside the known categories remains missing.
+recode_factor <- function(x, map) {
+  factor(unname(map[tolower(trimws(x))]), levels = unique(unname(map)))
+}
+smoking_labels <- c(never = "Never", "never-smoker" = "Never",
+                    ever = "Ever", "ever-smoker" = "Ever", current = "Ever",
+                    ex = "Ever", "ex-smoker" = "Ever")
+driver_labels <- c("egfr mutation +" = "EGFR", "egfr mutation (+)" = "EGFR",
+                   "kras mutation +" = "KRAS/ALK", "kras mutation (+)" = "KRAS/ALK",
+                   "alk-fusion +" = "KRAS/ALK", "eml4-alk fusion (+)" = "KRAS/ALK",
+                   "egfr/kras/alk -" = "Triple-negative", "triple negative" = "Triple-negative")
+
+tcga <- scores[["TCGA-LUAD"]]
+tcga$pack_years_z <- z(tcga$pack_years)
+gse31210 <- scores[["GSE31210"]]
+gse31210$smoking_ever <- recode_factor(gse31210$smoking, smoking_labels)
+gse31210$driver_group <- recode_factor(gse31210$driver, driver_labels)
+gse50081 <- scores[["GSE50081"]]
+gse50081$smoking_ever <- recode_factor(gse50081$smoking, smoking_labels)
+
+adjustments <- list(
+  paired_adjustment(tcga, "TCGA-LUAD", "pack_years_adjustment", "pack_years_z"),
+  paired_adjustment(gse31210, "GSE31210", "smoking_driver_adjustment", c("smoking_ever", "driver_group")),
+  paired_adjustment(gse50081, "GSE50081", "smoking_adjustment", "smoking_ever")
+)
+subgroups <- list(
+  driver_subgroup(gse31210, "GSE31210", "driver_group", "EGFR", "EGFR mutant"),
+  driver_subgroup(gse31210, "GSE31210", "driver_group", "Triple-negative", "Wild-type / triple-negative")
+)
+
+if ("GSE72094" %in% names(scores)) {
+  gse72094 <- scores[["GSE72094"]]
+  gse72094$smoking_ever <- recode_factor(gse72094$smoking, smoking_labels)
+  drivers <- c("egfr", "kras", "tp53", "stk11")
+  mutation_labels <- c(wt = "Negative", negative = "Negative", mut = "Positive", positive = "Positive")
+  gse72094[drivers] <- lapply(gse72094[drivers], recode_factor, map = mutation_labels)
+  adjustments <- c(adjustments, list(
+    paired_adjustment(gse72094, "GSE72094", "smoking_adjustment", "smoking_ever"),
+    paired_adjustment(gse72094, "GSE72094", "driver_adjustment", drivers)
+  ))
+  status_labels <- c(Positive = "mut", Negative = "wt")
+  subgroups <- c(subgroups, lapply(drivers, function(gene) {
+    rbindlist(lapply(names(status_labels), function(status) {
+      label <- paste(toupper(gene), status_labels[[status]])
+      driver_subgroup(gse72094, "GSE72094", gene, status, label)
+    }))
+  }))
+}
+
+driver_smoking <- rbindlist(c(adjustments, subgroups))
+fwrite(driver_smoking, file.path(tab, "03d_driver_smoking_adjustment.csv"))
+cat("Wrote", nrow(driver_smoking), "smoking and driver adjustment or subgroup estimates\n")
+
+source("R/lib_external_synthesis.R")
+source("R/lib_published_signatures.R")
+signatures <- read_published_signatures()
+cohorts <- readRDS("data/processed/cohorts.rds")
+published <- setNames(lapply(names(scores), function(id)
+  published_association_cohort(cohorts[[id]]$expr, scores[[id]], id, signatures)), names(scores))
+write_published_benchmark(published, tab)
+saveRDS(published, PUBLISHED_ASSOCIATION_CACHE)

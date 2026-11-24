@@ -18,11 +18,12 @@ z <- function(x) {
 # ---------------------------------------------------------------- Cox models --
 # Fit Surv ~ exposure + covariates and return one tidy row.
 cox_row <- function(data, exposure, covars = character(0), label = "model",
-                    cohort = NA_character_) {
-  required <- unique(c("os_time", "os_event", exposure, covars))
+                    cohort = NA_character_, stratify = character(0)) {
+  required <- unique(c("os_time", "os_event", exposure, covars, stratify))
   missing <- setdiff(required, names(data))
   if (length(missing)) stop("Missing model variables: ", paste(missing, collapse = ", "))
-  f <- as.formula(paste("Surv(os_time, os_event) ~", paste(c(exposure, covars), collapse = " + ")))
+  strata_term <- if (length(stratify)) paste0("strata(", paste(stratify, collapse = ", "), ")")
+  f <- as.formula(paste("Surv(os_time, os_event) ~", paste(c(exposure, covars, strata_term), collapse = " + ")))
   d <- data[stats::complete.cases(data[, required]), ]
   fit <- coxph(f, data = d)
   s <- summary(fit)

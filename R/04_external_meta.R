@@ -46,3 +46,8 @@ direction <- estimates[, .(n_cohorts = .N, n_positive = sum(HR > 1),
                            min_HR = min(HR), max_HR = max(HR)), by = exposure]
 fwrite(direction, file.path(tab, "04_direction_consistency.csv"))
 print(pooled[, .(axis, scope, method, k, pooled_HR, lo, hi, p_holm, I2)], digits = 3)
+
+if (Sys.getenv("LUAD_CORE_ONLY") == "1") {
+  source("R/lib_external_synthesis.R")
+  write_external_synthesis(scores, tab)
+}

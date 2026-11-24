@@ -52,8 +52,8 @@ association <- rbindlist(lapply(names(PROGRAMMES), function(axis)
   cox_row(d, axis, c("stage_group", "age_z", "sex"), "stage_I_vs_II_IV_age_sex", id)))
 
 tcga <- readRDS("data/processed/transport_components.rds")[["TCGA-LUAD"]]
+tcga_expr <- readRDS("data/processed/transport_expression.rds")[["TCGA-LUAD"]]
 if (length(missing)) {
-  tcga_expr <- readRDS("data/processed/transport_expression.rds")[["TCGA-LUAD"]]
   tcga <- transport_components(tcga_expr, tcga$clin, covered, sets)
 }
 test <- transport_components(mapped$transport_expr[, clin$sample, drop = FALSE], clin, covered, sets)
@@ -74,9 +74,25 @@ audit <- data.frame(
 outputs <- list(audit = audit, coverage = coverage, association = association,
                 transport = performance$evaluation, marker_contrasts = performance$contrasts,
                 calibration = performance$calibration, frozen_coefficients = transport_coefficients(frozen),
-                score_reference = transport_score_reference(frozen))
+                score_reference = transport_score_reference(frozen), recalibration = performance$recalibration)
 for (name in names(outputs))
   fwrite(outputs[[name]], file.path(tab, paste0("05b_rnaseq_", name, ".csv")))
 print(audit)
 print(association[, .(exposure, n, events, HR, lo, hi)])
 print(performance$evaluation[, .(model, c_index, delta_c, delta_lo, delta_hi, brier_36)])
+
+source("R/lib_external_synthesis.R")
+write_external_synthesis(readRDS("data/processed/scores.rds"), tab, cptac = d)
+
+source("R/lib_published_signatures.R")
+signatures <- read_published_signatures()
+published <- readRDS(PUBLISHED_ASSOCIATION_CACHE)
+published[[id]] <- published_association_cohort(expr, d, id, signatures)
+write_published_benchmark(published, tab)
+
+path <- file.path(tab, "05d_published_signature_transport.csv")
+arrays <- fread(path)[cohort != id]
+components <- list(`TCGA-LUAD` = tcga, `CPTAC-LUAD` = test)
+expression <- list(`TCGA-LUAD` = tcga_expr, `CPTAC-LUAD` = mapped$transport_expr)
+cptac_published <- published_transport_results(components, expression, covered, signatures)
+fwrite(rbindlist(list(arrays, cptac_published), use.names = TRUE), path)

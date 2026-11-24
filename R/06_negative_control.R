@@ -93,6 +93,7 @@ sens <- list()
 for (id in names(scores)) {
   p <- prepare(id)
   d <- p$d
+  centred_expr <- sweep(p$expr, 2L, apply(p$expr, 2L, median), "-")
   for (a in names(axes)) {
     add <- function(variant, result) {
       sens[[length(sens) + 1L]] <<- cbind(data.frame(cohort = id, axis = a, variant = variant),
@@ -106,6 +107,10 @@ for (id in names(scores)) {
     e <- t(p$expr[genes, , drop = FALSE])
     keep <- apply(e, 2L, sd) > 0
     add("Mean gene-wise z-score", fit_hr(d, standardise(rowMeans(apply(e[, keep, drop = FALSE], 2L, standardise)))))
+    centred <- t(centred_expr[genes, , drop = FALSE])
+    keep_centred <- apply(centred, 2L, sd) > 0
+    centred_score <- standardise(rowMeans(apply(centred[, keep_centred, drop = FALSE], 2L, standardise)))
+    add("Mean gene-wise z-score (sample-centred)", fit_hr(d, centred_score))
     lim <- quantile(d[[a]], c(.01, .99))
     add("Winsorise at 1% and 99%", fit_hr(d, standardise(pmin(pmax(d[[a]], lim[1L]), lim[2L]))))
     if (!is.null(d$rfs_time)) {
