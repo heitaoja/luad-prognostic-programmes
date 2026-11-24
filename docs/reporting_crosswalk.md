@@ -16,7 +16,7 @@ The manuscript follows the reporting domains of REMARK for tumour markers and TR
 | External discrimination, 36-month risk and recalibration | Results 6, Tables 6–7, Figures 4B and 5 | [GEO evaluation](../results/tables/05_incremental_value.csv) · [CPTAC evaluation](../results/tables/05b_rnaseq_transport.csv) · [GEO recalibration](../results/tables/05c_recalibration.csv) · [CPTAC recalibration](../results/tables/05b_rnaseq_recalibration.csv) |
 | Design history, interpretation and limitations | Methods and Discussion | [Analysis specification](analysis_plan_v2.md) · [Limitations](limitations.md) · [Changelog](changelog.md) |
 
-The five main figures appear as PDF and 300 dpi PNG in the figures directory. The supplementary numbering reserves Figure S1 for the standalone CPTAC evaluation. Figures S2–S12 correspond in order to the retained fig1–fig11 exports. [Main and supplementary legends](manuscript.md#figure-legends) · [Figure directory](../results/figures/)
+The five main figures appear as PDF and 300 dpi PNG in [results/figures/main/](../results/figures/main/). The twelve supplementary figures (`FigureS1`–`FigureS12`) appear in [results/figures/supplementary/](../results/figures/supplementary/), reserving Figure S1 for the standalone CPTAC RNA-seq evaluation. [Main and supplementary legends](manuscript.md#figure-legends)
 
 ## Full release workbook
 

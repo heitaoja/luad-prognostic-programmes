@@ -12,9 +12,8 @@ results/tables/02_scores_*.csv
 *.bz2
 *.zip
 
-# local scaffolding
+# local working files
 _work/
-.dsh-office-preview/
 .Rproj.user/
 .Rhistory
 renv/library/

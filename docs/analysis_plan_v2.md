@@ -1,6 +1,6 @@
 # Analysis specification for the revised study
 
-Revision initiated on 2026-11-24 (Hong Kong time).
+Revision date: 2026-11-24.
 
 ## Objective and version history
 
@@ -32,9 +32,9 @@ On 2026-11-24, before fitting CPTAC survival models, we specified a separate RNA
 
 Audit compatibility with the fixed array transport gene list before prediction. If CPTAC measures every required gene, apply the corresponding TCGA-fitted models directly. Otherwise, use the intersection of that list and the CPTAC measurement, provided that MKI67 is present and every Hallmark set retains at least 80% coverage. For this sensitivity analysis, derive a separate TCGA reference and model fit on that reduced list and apply it to CPTAC. Use the same five model formulae, paired bootstrap and 36-month reporting criteria. Gene compatibility depends on expression availability and annotation. In the frozen prediction experiment, TCGA data determine all prediction parameters and CPTAC outcomes are used for evaluation.
 
-## Extensions after review of the initial revision
+## Extended benchmark and sensitivity analyses
 
-The 2026-11-24 release adds the following secondary and sensitivity analyses. The original three-cohort and expanded four-cohort array syntheses remain identifiable in the original effect table. CPTAC met the eligibility and mapping audit and entered the five-cohort extension. GSE68465 remains outside this release pending harmonisation and overlap assessment. [Array synthesis](../results/tables/04_meta_analysis.csv) · [CPTAC audit](../results/tables/05b_rnaseq_audit.csv)
+The following secondary and sensitivity analyses complement the core cross-platform evaluation. The original three-cohort and expanded four-cohort array syntheses remain identifiable in the original effect table. CPTAC met the eligibility and mapping audit and entered the five-cohort extension. GSE68465 remains outside this release pending harmonisation and overlap assessment. [Array synthesis](../results/tables/04_meta_analysis.csv) · [CPTAC audit](../results/tables/05b_rnaseq_audit.csv)
 
 1. Compare clinical models with and without recorded smoking or driver terms in identical complete cases. Use TCGA pack-years, GSE31210 smoking and grouped alteration status, GSE50081 and GSE72094 smoking, and a separate GSE72094 four-driver model. Estimate exploratory driver subgroup HRs for proliferation and hypoxia in GSE31210 and GSE72094. Apply a ridge penalty to stage and sex columns if a represented level has no events. Add a sample-median-centred gene-wise z-score sensitivity while retaining the original average. [Smoking and drivers](../results/tables/03d_driver_smoking_adjustment.csv) · [Scoring sensitivity](../results/tables/06_sensitivity.csv)
 2. Fit one-stage IPD models at $k=3,4,5$ with a cohort-specific baseline and common stage term, and with separate cohort-by-stage baselines. Harmonise the four stage levels and keep within-cohort score and age standardisation. Add five-cohort REML-mKH ($df=4$) and DL summaries, combining the four GEO cohort estimates with the CPTAC cohort-specific estimates. Correct across four programmes with Holm within each scope and method. [IPD and five-cohort synthesis](../results/tables/04b_ipd_and_pan_external_synthesis.csv)

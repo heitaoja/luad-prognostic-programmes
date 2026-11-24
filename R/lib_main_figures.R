@@ -36,7 +36,7 @@ main_axis <- function(axis) factor(unname(MAIN_AXES[as.character(axis)]), levels
 save_main_figure <- function(plot, name, width, height) {
   tagged <- plot + plot_annotation(tag_levels = "A", theme = theme(plot.margin = margin(5, 6, 5, 6)))
   tagged <- tagged & theme(plot.tag = element_text(face = "bold", size = 11.5, colour = MAIN_INK))
-  save_figure(tagged, name, width, height)
+  save_figure(tagged, name, width, height, dir = fig_main)
 }
 
 main_forest <- function(plot, position = "identity", breaks = c(.25, .5, 1, 2, 4, 8, 16)) {

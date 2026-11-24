@@ -1,9 +1,4 @@
-# =============================================================================
-# lib_surv.R  --  shared survival / validation helpers
-# -----------------------------------------------------------------------------
-# Sourced by 03-07.  Everything here is deliberately explicit (no black-box
-# wrappers) so that each number in the paper can be traced to a line of code.
-# =============================================================================
+# Survival modelling, random-effects meta-analysis and Kaplan-Meier helpers.
 
 suppressPackageStartupMessages({
   library(survival); library(data.table); library(ggplot2)
@@ -15,7 +10,7 @@ z <- function(x) {
   as.numeric((x - mean(x, na.rm = TRUE)) / s)
 }
 
-# ---------------------------------------------------------------- Cox models --
+# Cox regression helpers
 # Fit Surv ~ exposure + covariates and return one tidy row.
 cox_row <- function(data, exposure, covars = character(0), label = "model",
                     cohort = NA_character_, stratify = character(0)) {
@@ -37,7 +32,7 @@ cox_row <- function(data, exposure, covars = character(0), label = "model",
              stringsAsFactors = FALSE)
 }
 
-# ------------------------------------------------------------------- meta ----
+# Random-effects meta-analysis helpers
 # DerSimonian-Laird random effects on the log-HR scale.
 meta_dl <- function(est, se, labels = NULL) {
   k <- length(est); w <- 1 / se^2
@@ -89,7 +84,7 @@ pool_estimates <- function(rows, method = "REML_mKH") {
              n_total = sum(rows$n), events_total = sum(rows$events))
 }
 
-# ------------------------------------------------------------- KM plotting ---
+# Kaplan-Meier data preparation
 km_df <- function(data, group, time = "os_time", event = "os_event") {
   d <- data.frame(time = data[[time]], event = data[[event]], group = data[[group]])
   d <- d[stats::complete.cases(d), ]

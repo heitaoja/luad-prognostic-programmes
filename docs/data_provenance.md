@@ -35,4 +35,4 @@ GSE68465 remains a candidate for additional replication after auditing the platf
 
 ## Reproduction
 
-Run `Rscript R/fetch_inputs.R` followed by `Rscript R/run_pipeline.R` from the repository root. The fetcher verifies existing inputs and stages downloads to temporary files until they match the manifest. The R package versions and platform used for the release are recorded in [sessionInfo.txt](sessionInfo.txt). The full run writes participant-level intermediates under the ignored data directory and summary tables and figures under results.
+Run `Rscript scripts/fetch_inputs.R` followed by `Rscript scripts/run_pipeline.R` from the repository root. The fetcher verifies existing inputs and stages downloads to temporary files until they match the manifest. The R package versions and platform used for the release are recorded in [sessionInfo.txt](sessionInfo.txt). The full run writes participant-level intermediates under the ignored data directory and summary tables and figures under results.

@@ -1,3 +1,4 @@
+# Input manifest verification and gene-symbol mapping helpers.
 input_manifest <- function() {
   inputs <- read.csv("data/checksums.csv", colClasses = c(
     path = "character", md5 = "character", bytes = "numeric", scope = "character", source = "character"
@@ -9,7 +10,7 @@ input_manifest <- function() {
 verify_input_files <- function(inputs = input_manifest()) {
   missing <- inputs$path[!file.exists(inputs$path)]
   if (length(missing))
-    stop("Missing pinned inputs. Run Rscript R/fetch_inputs.R. Missing: ", paste(missing, collapse = ", "))
+    stop("Missing pinned inputs. Run Rscript scripts/fetch_inputs.R. Missing: ", paste(missing, collapse = ", "))
   actual <- unname(tools::md5sum(inputs$path))
   bad <- is.na(actual) | actual != inputs$md5 | file.size(inputs$path) != inputs$bytes
   if (any(bad))

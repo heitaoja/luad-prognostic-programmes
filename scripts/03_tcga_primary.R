@@ -1,10 +1,4 @@
-# =============================================================================
-# 03_tcga_primary.R  --  primary analysis in TCGA-LUAD
-# -----------------------------------------------------------------------------
-# For each pre-specified axis: univariable and adjusted Cox models, C-index
-# ladder, stage-stratified effects, and the balance hypothesis (secondary).
-# Output: results/tables/03_*.csv
-# =============================================================================
+# Primary TCGA-LUAD survival models, concordance ladder and stage-stratified analyses.
 suppressPackageStartupMessages({ library(survival); library(data.table) })
 source("R/lib_surv.R")
 PROJ <- normalizePath(".", winslash = "/")
@@ -21,7 +15,7 @@ cat("=== TCGA-LUAD: n =", nrow(d), " events =", sum(d$os_event), "===\n")
 cat("stage:", paste(names(table(d$stage, useNA = "ifany")),
                     table(d$stage, useNA = "ifany"), sep = "=", collapse = " "), "\n")
 
-# ---- 1. Cox models ---------------------------------------------------------
+# Cox models
 rows_uni <- rbindlist(lapply(AXES, function(a)
   cox_row(d, a, character(0), "univariable", "TCGA-LUAD")))
 rows_adj <- rbindlist(lapply(AXES, function(a)
@@ -38,7 +32,7 @@ for (i in seq_len(nrow(rows_adj)))
   cat(sprintf("%-14s HR %.2f (%.2f-%.2f) p=%.2g  C=%.3f\n", rows_adj$exposure[i],
       rows_adj$HR[i], rows_adj$lo[i], rows_adj$hi[i], rows_adj$p[i], rows_adj$cindex[i]))
 
-# adjusted stage effects (from the model with the strongest axis)
+# Adjusted stage effects from the model with the lowest p-value
 best <- rows_adj$exposure[which.min(rows_adj$p)]
 fit_best <- coxph(as.formula(paste("Surv(os_time, os_event) ~", best,
                                   "+", paste(COV, collapse = " + "))), data = d)
@@ -49,7 +43,7 @@ fwrite(st, file.path(OUT, "03_adjusted_model_terms.csv"))
 cat("\n--- covariates in the model with the strongest axis (", best, ") ---\n")
 print(st, row.names = FALSE, digits = 3)
 
-# ---- 2. C-index ladder -----------------------------------------------------
+# Concordance ladder
 dc <- d[complete.cases(d[, c("os_time", "os_event", COV, AXES)]), ]
 clinical_formula <- Surv(os_time, os_event) ~ stage + age_z + sex
 fit_clin <- coxph(clinical_formula, data = dc)
@@ -69,7 +63,7 @@ fwrite(lad, file.path(OUT, "03_cindex_ladder.csv"))
 cat("\n--- C-index ladder (TCGA) ---\n")
 print(lad[, c("model", "cindex", "delta", "LR_p", "AIC")], row.names = FALSE, digits = 3)
 
-# ---- 3. stage-stratified ---------------------------------------------------
+# Stage-stratified models
 strat <- rbindlist(lapply(AXES, function(a) rbindlist(lapply(levels(d$stage)[1:3], function(st) {
   x <- d[which(d$stage == st), ]
   if (nrow(x) < 40 || sum(x$os_event) < 10) return(NULL)
@@ -84,7 +78,7 @@ for (i in seq_len(nrow(strat)))
       strat$stage[i], strat$n[i], strat$events[i], strat$HR[i], strat$lo[i],
       strat$hi[i], strat$p[i]))
 
-# ---- 4. exploratory omnibus interaction with stage -------------------------
+# Exploratory stage interaction tests
 interactions <- rbindlist(lapply(AXES, function(a) {
   additive <- coxph(reformulate(c(a, COV), response = "Surv(os_time, os_event)"), data = dc)
   interaction <- coxph(reformulate(c(paste0(a, " * stage"), "age_z", "sex"),
@@ -93,7 +87,7 @@ interactions <- rbindlist(lapply(AXES, function(a) {
 }))
 fwrite(interactions, file.path(OUT, "03_stage_interaction.csv"))
 
-# ---- 5. balance hypothesis (secondary, pre-specified first) ----------------
+# Secondary proliferation-immune balance model
 fb <- cox_row(d, "balance", COV, "adjusted", "TCGA-LUAD")
 fpi <- coxph(Surv(os_time, os_event) ~ proliferation * immune + stage + age_z + sex, data = d)
 int_p <- summary(fpi)$coef["proliferation:immune", "Pr(>|z|)"]
@@ -103,7 +97,7 @@ bal <- data.frame(
   estimate = c(fb$HR, NA), lo = c(fb$lo, NA), hi = c(fb$hi, NA),
   p = c(fb$p, int_p))
 fwrite(bal, file.path(OUT, "03_balance_secondary.csv"))
-cat("\n--- secondary: the abandoned 'balance' hypothesis ---\n")
+cat("\n--- secondary: balance model ---\n")
 cat(sprintf("balance adj HR %.2f (%.2f-%.2f) p=%.3g | proliferation x immune p=%.2f\n",
             fb$HR, fb$lo, fb$hi, fb$p, int_p))
 

@@ -13,4 +13,4 @@ if [[ -z "$RSCRIPT" ]]; then
   exit 1
 fi
 
-exec "$RSCRIPT" --vanilla R/run_pipeline.R "$@"
+exec "$RSCRIPT" --vanilla scripts/run_pipeline.R "$@"

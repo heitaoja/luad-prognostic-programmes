@@ -1,9 +1,4 @@
-# =============================================================================
-# 03b_mutual_adjustment.R  --  all four axes in one model (mutual adjustment)
-# -----------------------------------------------------------------------------
-# Addresses the obvious reviewer question: are the axes just proxies for each
-# other (and for tumour purity / stromal content)?
-# =============================================================================
+# Joint Cox models entering all four Hallmark programmes simultaneously.
 suppressPackageStartupMessages({ library(survival); library(data.table) })
 source("R/lib_surv.R")
 PROJ <- normalizePath(".", winslash = "/"); TAB <- file.path(PROJ, "results", "tables")

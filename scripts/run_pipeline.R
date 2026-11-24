@@ -10,14 +10,15 @@ if (length(selected)) {
   steps <- steps[steps %in% unlist(hits)]
 }
 if (Sys.getenv("LUAD_CORE_ONLY") == "1") steps <- setdiff(steps, "05b_rnaseq_validation")
-for (d in c("data/processed", "results/logs", "results/objects", "results/tables", "results/figures"))
+for (d in c("data/processed", "results/logs", "results/objects", "results/tables",
+            "results/figures/main", "results/figures/supplementary"))
   dir.create(d, recursive = TRUE, showWarnings = FALSE)
 rscript <- file.path(R.home("bin"), if (.Platform$OS.type == "windows") "Rscript.exe" else "Rscript")
 start <- Sys.time()
 for (step in steps) {
   log <- file.path("results/logs", paste0(step, ".log"))
   cat("Running", step, "\n")
-  status <- system2(rscript, c("--vanilla", shQuote(file.path("R", paste0(step, ".R")))),
+  status <- system2(rscript, c("--vanilla", shQuote(file.path("scripts", paste0(step, ".R")))),
                     stdout = log, stderr = log)
   if (status != 0L) {
     cat(tail(readLines(log, warn = FALSE), 30), sep = "\n")

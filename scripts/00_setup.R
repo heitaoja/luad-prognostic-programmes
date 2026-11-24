@@ -1,10 +1,12 @@
+# Check package dependencies, verify pinned inputs and record session metadata.
 source("R/lib_inputs.R")
 source("R/lib_score.R")
 packages <- c("survival", "data.table", "ggplot2", "patchwork", "openxlsx",
               "org.Hs.eg.db", "hgu133plus2.db", "AnnotationDbi", "R.utils")
 available <- vapply(packages, requireNamespace, logical(1), quietly = TRUE)
 if (!all(available)) stop("Missing R packages: ", paste(packages[!available], collapse = ", "))
-for (p in c("data/processed", "results/objects", "results/tables", "results/figures", "results/logs"))
+for (p in c("data/processed", "results/objects", "results/tables",
+            "results/figures/main", "results/figures/supplementary", "results/logs"))
   dir.create(p, recursive = TRUE, showWarnings = FALSE)
 inputs <- verify_input_files()
 if (!capabilities("cairo")) stop("Cairo graphics is required for the PDF figures")

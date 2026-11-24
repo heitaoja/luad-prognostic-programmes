@@ -1,16 +1,6 @@
-# =============================================================================
-# 01_load_data.R  --  read, harmonise and audit all cohorts
-# -----------------------------------------------------------------------------
-# Output: data/processed/cohorts.rds   list(cohort -> list(expr, clin, meta))
-#         results/tables/01_cohort_audit.csv
-#
-# Conventions (documented in docs/methods.md)
-#   * expression is log2 scale for every cohort
-#   * gene identifiers are HGNC symbols; duplicated symbols keep the row with
-#     the highest mean expression
-#   * survival time is MONTHS, event 1 = death    (all raw units recorded below)
-#   * LUAD only: external cohorts are restricted to adenocarcinoma histology
-# =============================================================================
+# Load, harmonise and audit all expression and clinical cohorts.
+# Inputs: raw TCGA, GEO and annotation files (log2 scale, survival in months).
+# Outputs: data/processed/cohorts.rds, transport_expression.rds, tcga_alternate.rds, 01_cohort_audit.csv.
 
 suppressPackageStartupMessages({
   library(data.table); library(AnnotationDbi); library(org.Hs.eg.db); library(survival)
@@ -23,7 +13,7 @@ PDIR <- file.path(PROJ, "data", "processed");    dir.create(PDIR, TRUE, showWarn
 RAW  <- file.path(PROJ, "data", "raw")
 DAY_PER_MONTH <- 30.4375
 
-# ---------------------------------------------------------------- helpers ---
+# Helpers
 `%||%` <- function(a, b) if (is.null(a) || !length(a) || all(is.na(a))) b else a
 
 read_geo <- function(file) {
@@ -146,7 +136,7 @@ audit_add <- function(id, expr, clin, unit) {
 
 cohorts <- list()
 
-# ============================================================ 1. TCGA-LUAD ==
+# TCGA-LUAD
 message("== TCGA-LUAD")
 tc <- file.path(RAW, "tcga")
 ex <- fread(file.path(tc, "TCGA-LUAD.star_counts.tsv.gz"), data.table = FALSE, showProgress = FALSE)
@@ -199,7 +189,7 @@ cohorts[["TCGA-LUAD"]] <- c(tcga, list(clin = tcga_clin,
               role = "discovery / training", raw_time_unit = "days")))
 audit_add("TCGA-LUAD", tcga$expr, tcga_clin, "days")
 
-# ================================================================ 2. GSE31210
+# GSE31210
 message("== GSE31210")
 g <- read_geo(file.path(RAW, "geo", "GSE31210_series_matrix.txt.gz"))
 mapped <- to_symbol(log2(g$expr + 1), "hgu133plus2", transport = TRUE)
@@ -228,7 +218,7 @@ cohorts[["GSE31210"]] <- c(mapped, list(clin = clin,
               raw_time_unit = "days")))
 audit_add("GSE31210", mapped$expr, clin, "days")
 
-# ================================================================ 3. GSE37745
+# GSE37745
 message("== GSE37745")
 g <- read_geo(file.path(RAW, "geo", "GSE37745_series_matrix.txt.gz"))
 mapped <- to_symbol(g$expr, "hgu133plus2", transport = TRUE)
@@ -252,7 +242,7 @@ cohorts[["GSE37745"]] <- c(mapped, list(clin = clin,
               selection = "histology == adeno")))
 audit_add("GSE37745", mapped$expr, clin, "days")
 
-# ================================================================ 4. GSE50081
+# GSE50081
 message("== GSE50081")
 g <- read_geo(file.path(RAW, "geo", "GSE50081_series_matrix.txt.gz"))
 mapped <- to_symbol(g$expr, "hgu133plus2", transport = TRUE)
@@ -277,7 +267,7 @@ cohorts[["GSE50081"]] <- c(mapped, list(clin = clin,
               selection = "histology == adenocarcinoma")))
 audit_add("GSE50081", mapped$expr, clin, "years")
 
-# ====================================================== 5. GSE72094 extension
+# GSE72094
 extra_files <- file.path(RAW, "geo", c("GSE72094_series_matrix.txt.gz",
                                      "GPL15048_hursta_annotation.txt"))
 if (Sys.getenv("LUAD_CORE_ONLY") != "1") {
@@ -305,7 +295,7 @@ if (Sys.getenv("LUAD_CORE_ONLY") != "1") {
   audit_add("GSE72094", mapped$expr, clin, "days")
 }
 
-# ==================================================================== save ===
+# Save processed objects and cohort audit table
 aud <- do.call(rbind, audit); rownames(aud) <- NULL
 fwrite(aud, file.path(OUT, "01_cohort_audit.csv"))
 transport_expression <- lapply(cohorts, function(x) x$transport_expr)

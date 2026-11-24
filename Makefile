@@ -1,11 +1,18 @@
 RSCRIPT ?= Rscript
 
-.PHONY: all check params session
+.PHONY: all deps fetch check params session
+
 all:
-	$(RSCRIPT) --vanilla R/run_pipeline.R
+	$(RSCRIPT) --vanilla scripts/run_pipeline.R
+
+deps:
+	$(RSCRIPT) --vanilla scripts/install_packages.R
+
+fetch:
+	$(RSCRIPT) --vanilla scripts/fetch_inputs.R
 
 check:
-	$(RSCRIPT) --vanilla R/99_verify.R
+	$(RSCRIPT) --vanilla scripts/99_verify.R
 
 params session:
-	$(RSCRIPT) --vanilla R/00_setup.R
+	$(RSCRIPT) --vanilla scripts/00_setup.R

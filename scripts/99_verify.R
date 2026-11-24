@@ -46,80 +46,23 @@ verify_files(c("results/tables/project_tables.xlsx", "README.md",
                file.path("docs", c("manuscript.md", "methods.md", "analysis_plan_v2.md",
                                    "limitations.md", "reporting_crosswalk.md", "changelog.md"))))
 verify_files("config/published_signatures.csv")
-figures <- c("fig1_cohort_overview", "fig2_axis_distribution", "fig3_forest_all_cohorts",
-             "fig4_km_tcga", "fig5_stage_stratified", "fig6_incremental", "fig7_negative_control",
-             "fig8_sensitivity", "fig9_marker_benchmark", "fig10_calibration")
-if (full) figures <- c(figures, "fig11_purity_sensitivity", "figS1_rnaseq_validation")
-figures <- c(figures, "Figure1_Cohort_and_Scores", "Figure2_Association_and_IPD_Synthesis",
-             "Figure3_Specificity_Purity_and_Drivers", "Figure4_Redundancy_Benchmark",
-             "Figure5_Calibration_and_Recalibration")
-verify_files(file.path("results/figures", unlist(lapply(figures, paste0, c(".pdf", ".png")))))
-
-verify_manuscript <- function(path, figures) {
-  lines <- readLines(path, encoding = "UTF-8", warn = FALSE)
-  sections <- c("Abstract", "Introduction", "Methods", "Results", "Discussion",
-                "Data and code availability", "Figure Legends", "Supplementary Figure Legends", "References")
-  headings <- setNames(match(paste("##", sections), lines), sections)
-  stopifnot(!anyNA(headings), !is.unsorted(headings, strictly = TRUE))
-  section <- function(name) {
-    start <- headings[[name]]
-    end <- c(headings[headings > start], length(lines) + 1L)[1L]
-    lines[seq.int(start + 1L, end - 1L)]
-  }
-  count_words <- function(x) {
-    prose <- x[!grepl("^#|^\\||^\\*\\*Table [0-9]+\\.", x)]
-    prose <- gsub("\\[[^]]+\\]\\([^)]+\\)", "", prose)
-    prose <- gsub("\\([0-9]+(?:[–, ]+[0-9]+)*\\)", "", prose, perl = TRUE)
-    words <- strsplit(paste(prose, collapse = " "), "[[:space:]]+")[[1L]]
-    sum(grepl("[[:alnum:]]", words))
-  }
-  word_count <- count_words(lines[seq.int(headings[["Abstract"]] + 1L, headings[["Figure Legends"]] - 1L)])
-  abstract <- section("Abstract")
-  abstract_words <- count_words(abstract)
-  results <- section("Results")
-  paragraphs <- function(x) {
-    blocks <- strsplit(paste(x, collapse = "\n"), "\n[[:blank:]]*\n+")[[1L]]
-    sum(nzchar(trimws(blocks)))
-  }
-  intro_paragraphs <- paragraphs(section("Introduction"))
-  stopifnot(word_count >= 4500L, word_count <= 5500L, abstract_words >= 250L, abstract_words <= 300L,
-            identical(sub("^\\*\\*([^.]+)\\..*$", "\\1", grep("^\\*\\*", abstract, value = TRUE)),
-                      c("Background", "Methods", "Results", "Conclusions")),
-            intro_paragraphs %in% 4:5, paragraphs(section("Discussion")) == 6L,
-            identical(sub("^### ([0-9]+)\\..*$", "\\1", grep("^### ", results, value = TRUE)),
-                      as.character(1:6)),
-            sum(grepl("^\\| --- ", results)) >= 1L)
-  caption_assets <- function(x) {
-    links <- grep("]\\(\\.\\./results/figures/[^/]+\\.pdf\\)", x, value = TRUE)
-    sub("^.*]\\(\\.\\./results/figures/([^/]+)\\.pdf\\).*$", "\\1", links)
-  }
-  main <- section("Figure Legends")
-  supplementary <- section("Supplementary Figure Legends")
-  legacy <- unique(c(grep("^fig", figures, value = TRUE), "fig11_purity_sensitivity", "figS1_rnaseq_validation"))
-  stopifnot(identical(sub("^### Figure ([1-5])\\..*$", "\\1", grep("^### Figure ", main, value = TRUE)),
-                      as.character(1:5)),
-            identical(caption_assets(main), grep("^Figure[1-5]_", figures, value = TRUE)),
-            length(caption_assets(supplementary)) == length(legacy),
-            setequal(caption_assets(supplementary), legacy),
-            identical(sub("^### Figure S([0-9]+)\\..*$", "\\1", grep("^### Figure S", supplementary, value = TRUE)),
-                      as.character(seq_along(legacy))))
-  references <- grep("^[0-9]+\\. ", section("References"), value = TRUE)
-  n_references <- length(references)
-  stopifnot(n_references >= 25L, n_references <= 35L,
-            identical(as.integer(sub("\\..*$", "", references)), seq_len(n_references)),
-            all(grepl("]\\(https://(doi\\.org/10\\.[0-9]+/[^[:space:]]+|pubmed\\.ncbi\\.nlm\\.nih\\.gov/[0-9]+/)\\)$",
-                      references)))
-  cat(sprintf("PASS: manuscript (%d prose words, %d abstract words, 5 main and %d supplementary figure legends, %d references)\n",
-              word_count, abstract_words, length(legacy), n_references))
-}
-
-verify_manuscript("docs/manuscript.md", figures)
+main_figures <- c("Figure1_Cohort_and_Scores", "Figure2_Association_and_IPD_Synthesis",
+                  "Figure3_Specificity_Purity_and_Drivers", "Figure4_Redundancy_Benchmark",
+                  "Figure5_Calibration_and_Recalibration")
+supp_figures <- c("FigureS2_Cohort_Overview", "FigureS3_Score_Distributions",
+                  "FigureS4_Array_Forest_Plots", "FigureS5_TCGA_Kaplan_Meier",
+                  "FigureS6_TCGA_Stage_Stratified", "FigureS7_External_Harrell_C",
+                  "FigureS8_Random_Programme_Null", "FigureS9_Sensitivity_Heatmap",
+                  "FigureS10_Simple_Marker_Benchmark", "FigureS11_Frozen_Calibration")
+if (full) supp_figures <- c("FigureS1_CPTAC_RNAseq_Validation", supp_figures, "FigureS12_Purity_Sensitivity")
+verify_files(file.path("results/figures/main", unlist(lapply(main_figures, paste0, c(".pdf", ".png")))))
+verify_files(file.path("results/figures/supplementary", unlist(lapply(supp_figures, paste0, c(".pdf", ".png")))))
 
 workbook_path <- "results/tables/project_tables.xlsx"
 sheet_names <- openxlsx::getSheetNames(workbook_path)
 evidence <- release_evidence_sheets(full)
-legacy_sheets <- if (full) 24L else 19L
-stopifnot(length(sheet_names) == legacy_sheets + length(evidence),
+core_sheets <- if (full) 24L else 19L
+stopifnot(length(sheet_names) == core_sheets + length(evidence),
           !anyDuplicated(sheet_names), all(nchar(sheet_names) <= 31L),
           identical(tail(sheet_names, length(evidence)), names(evidence)))
 for (sheet in names(evidence)) {

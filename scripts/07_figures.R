@@ -1,10 +1,12 @@
-# Publication figures from the revised analyses.
+# Generate main multipanel figures and supplementary figures.
 source("R/lib_surv.R")
 suppressPackageStartupMessages(library(patchwork))
-fig <- "results/figures"
+fig_main <- "results/figures/main"
+fig_supp <- "results/figures/supplementary"
 tab <- "results/tables"
 read_table <- function(name) fread(file.path(tab, paste0(name, ".csv")))
-dir.create(fig, showWarnings = FALSE, recursive = TRUE)
+dir.create(fig_main, showWarnings = FALSE, recursive = TRUE)
+dir.create(fig_supp, showWarnings = FALSE, recursive = TRUE)
 cohorts <- read_table("01_cohort_audit")
 ids <- cohorts$cohort
 axes <- c(proliferation = "Proliferation", hypoxia = "Hypoxia / glycolysis",
@@ -23,10 +25,10 @@ base <- theme_minimal(base_size = 10) +
         strip.text = element_text(face = "bold"),
         plot.title.position = "plot", plot.title = element_text(face = "bold", size = 12),
         legend.position = "bottom")
-save_figure <- function(p, name, width = 180, height = 108) {
-  ggsave(file.path(fig, paste0(name, ".pdf")), p, width = width, height = height,
+save_figure <- function(p, name, width = 180, height = 108, dir = fig_supp) {
+  ggsave(file.path(dir, paste0(name, ".pdf")), p, width = width, height = height,
          units = "mm", device = cairo_pdf, bg = "white")
-  ggsave(file.path(fig, paste0(name, ".png")), p, width = width, height = height,
+  ggsave(file.path(dir, paste0(name, ".png")), p, width = width, height = height,
          units = "mm", dpi = 300, bg = "white")
 }
 cohort_order <- function(x) factor(x, levels = rev(ids))
@@ -53,7 +55,7 @@ p_fu <- ggplot(cohorts, aes(median_followup_mo, cohort)) +
   scale_x_continuous(expand = expansion(mult = c(.05, .16))) +
   labs(x = "Reverse Kaplan-Meier follow-up (months)", y = NULL) + base
 save_figure((p_count | p_fu) + plot_annotation(title = "Cohort size and follow-up"),
-            "fig1_cohort_overview", 205, 82)
+            "FigureS2_Cohort_Overview", 205, 82)
 
 scores <- readRDS("data/processed/scores.rds")
 d <- rbindlist(lapply(scores, function(d) {
@@ -66,7 +68,7 @@ p_dist <- ggplot(d, aes(value, colour = cohort)) +
   scale_colour_manual(values = setNames(palette[seq_along(ids)], ids)) +
   labs(title = "Distribution of cohort-standardised programme scores",
        x = "Score (SD)", y = "Density", colour = "Cohort") + base
-save_figure(p_dist, "fig2_axis_distribution", 180, 113)
+save_figure(p_dist, "FigureS3_Score_Distributions", 180, 113)
 
 est <- read_table("04_cohort_estimates")
 meta <- read_table("04_meta_analysis")[method == "REML_mKH"]
@@ -82,7 +84,7 @@ p_assoc <- hr_plot(ggplot(fp, aes(HR, cohort, colour = source, shape = source)))
   facet_wrap(~ axis, ncol = 2) +
   scale_colour_manual(values = c(Discovery = "#586573", External = blue, "External synthesis" = red)) +
   labs(title = "Programme associations and external synthesis", colour = NULL, shape = NULL)
-save_figure(p_assoc, "fig3_forest_all_cohorts", 208, 147)
+save_figure(p_assoc, "FigureS4_Array_Forest_Plots", 208, 147)
 
 km <- rbindlist(lapply(c("proliferation", "hypoxia"), function(a) {
   d <- scores[["TCGA-LUAD"]]
@@ -101,14 +103,14 @@ p_km <- ggplot(km, aes(time, surv, colour = group)) +
   labs(title = "TCGA-LUAD survival by median score",
        subtitle = "Median groups are used for visualisation",
        x = "Follow-up (months)", y = "Overall survival probability", colour = NULL) + base
-save_figure(p_km, "fig4_km_tcga", 178, 86)
+save_figure(p_km, "FigureS5_TCGA_Kaplan_Meier", 178, 86)
 
 stage <- read_table("03_stage_stratified")
 stage[, axis := axis_order(exposure)]
 p_stage <- hr_plot(ggplot(stage, aes(HR, stage, colour = stage))) +
   facet_wrap(~ axis, ncol = 2) + theme(legend.position = "none") +
   labs(title = "TCGA-LUAD stage-specific estimates", subtitle = "Exploratory models")
-save_figure(p_stage, "fig5_stage_stratified", 179, 98)
+save_figure(p_stage, "FigureS6_TCGA_Stage_Stratified", 179, 98)
 
 transport <- read_table("05_incremental_value")
 transport[, cohort := factor(cohort, levels = ids)]
@@ -122,7 +124,7 @@ p_transport <- ggplot(d, aes(delta_c, model_label)) +
   labs(title = "Discrimination after transport from TCGA-LUAD",
        x = "Change in Harrell C versus the fixed clinical model (95% CI)", y = NULL) +
   base + theme(legend.position = "none")
-save_figure(p_transport, "fig6_incremental", 184, 119)
+save_figure(p_transport, "FigureS7_External_Harrell_C", 184, 119)
 
 null <- read_table("06_random_set_null")
 draws <- rbindlist(lapply(seq_len(nrow(null)), function(i)
@@ -134,7 +136,7 @@ p_null <- ggplot(draws, aes(HR)) +
   labs(title = "Observed effects against matched random programmes",
        subtitle = "Null programmes preserve component gene counts, rank abundance and overlap",
        x = "Adjusted hazard ratio", y = "Random draws") + base
-save_figure(p_null, "fig7_negative_control", 188, 132)
+save_figure(p_null, "FigureS8_Random_Programme_Null", 188, 132)
 
 sens <- read_table("06_sensitivity")
 sens[, cohort := cohort_order(cohort)]
@@ -146,7 +148,7 @@ p_sens <- ggplot(sens, aes(variant, cohort, fill = log2(HR))) +
   labs(title = "Sensitivity to endpoint, scoring and clinical adjustment",
        x = NULL, y = NULL, fill = "log2 HR") +
   base + theme(axis.text.x = element_text(angle = 18, hjust = 1))
-save_figure(p_sens, "fig8_sensitivity", 195, 120)
+save_figure(p_sens, "FigureS9_Sensitivity_Heatmap", 195, 120)
 
 bench <- read_table("03c_marker_synthesis")
 selected_scope <- if ("extended" %in% bench$scope) "extended" else "validation"
@@ -162,7 +164,7 @@ p_bench <- hr_plot(ggplot(b, aes(HR, label, colour = contrast))) +
   scale_colour_manual(values = c("With clinical variables" = blue,
                                  "Composite conditional on a simpler score" = red)) +
   labs(title = "External synthesis against simpler proliferation measures", colour = NULL)
-save_figure(p_bench, "fig9_marker_benchmark", 191, 97)
+save_figure(p_bench, "FigureS10_Simple_Marker_Benchmark", 191, 97)
 
 cal <- read_table("05_calibration")
 cal[, model := factor(models[model], levels = unname(models)[1:2])]
@@ -177,7 +179,7 @@ p_cal <- ggplot(cal, aes(predicted, observed, colour = model)) +
   labs(title = "Calibration of fixed 36-month risks",
        subtitle = "Points are quartiles of predicted risk within test cohorts",
        x = "Mean predicted mortality", y = "Kaplan-Meier mortality", colour = NULL) + base
-save_figure(p_cal, "fig10_calibration", 175, 154)
+save_figure(p_cal, "FigureS11_Frozen_Calibration", 175, 154)
 
 purity <- read_table("03c_purity_sensitivity")
 if (nrow(purity)) {
@@ -192,7 +194,7 @@ if (nrow(purity)) {
     labs(title = "DNA-derived tumour purity sensitivity",
          subtitle = paste0("Identical TCGA subsets in both models (n = ", unique(purity$n), ")"),
          colour = NULL) + theme(legend.position = "none")
-  save_figure(p_purity, "fig11_purity_sensitivity", 188, 90)
+  save_figure(p_purity, "FigureS12_Purity_Sensitivity", 188, 90)
 }
 
 if (Sys.getenv("LUAD_CORE_ONLY") != "1") {
@@ -211,7 +213,7 @@ if (Sys.getenv("LUAD_CORE_ONLY") != "1") {
   subtitle <- sprintf("%d participants and %d deaths", rna_audit$complete_cases, rna_audit$complete_case_deaths)
   save_figure((p_rna_hr | p_rna_c) + plot_annotation(
     title = "Independent RNA-seq evaluation in CPTAC-LUAD", subtitle = subtitle, tag_levels = "A"),
-    "figS1_rnaseq_validation", 204, 89)
+    "FigureS1_CPTAC_RNAseq_Validation", 204, 89)
 }
 
 source("R/lib_main_figures.R")
