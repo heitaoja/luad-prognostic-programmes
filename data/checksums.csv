@@ -1,1 +1,14 @@
-path,md5,bytes,downloaded_at,source,note
+path,md5,bytes,scope,source
+data/genesets/Hallmark_Enrichr.gmt,a07e950680738a6ce60aedac9b96f8c9,44235,core,https://maayanlab.cloud/Enrichr/geneSetLibrary?mode=text&libraryName=MSigDB_Hallmark_2020
+data/raw/tcga/TCGA-LUAD.star_counts.tsv.gz,c6520a0ddcbd96e013b8a114e2309d63,66495260,core,https://gdc-hub.s3.us-east-1.amazonaws.com/download/TCGA-LUAD.star_counts.tsv.gz
+data/raw/tcga/TCGA-LUAD.survival.tsv.gz,b74580c01954f1a757d6f1bbefac304a,5253,core,https://gdc-hub.s3.us-east-1.amazonaws.com/download/TCGA-LUAD.survival.tsv.gz
+data/raw/tcga/TCGA-LUAD.clinical.tsv.gz,61d13a57f89a9ff45ce63121d89f2157,149532,core,https://gdc-hub.s3.us-east-1.amazonaws.com/download/TCGA-LUAD.clinical.tsv.gz
+data/raw/geo/GSE31210_series_matrix.txt.gz,1a7ea5ccf96f5a78e24a2f2cdf43bc6a,59914213,core,https://ftp.ncbi.nlm.nih.gov/geo/series/GSE31nnn/GSE31210/matrix/GSE31210_series_matrix.txt.gz
+data/raw/geo/GSE37745_series_matrix.txt.gz,b0ce31afc39656fb3c1a6a6edc94e86c,58310722,core,https://ftp.ncbi.nlm.nih.gov/geo/series/GSE37nnn/GSE37745/matrix/GSE37745_series_matrix.txt.gz
+data/raw/geo/GSE50081_series_matrix.txt.gz,9dee944f1cc4254180e284a603c02897,53819644,core,https://ftp.ncbi.nlm.nih.gov/geo/series/GSE50nnn/GSE50081/matrix/GSE50081_series_matrix.txt.gz
+data/raw/geo/GSE72094_series_matrix.txt.gz,097e138c5e75559652363c79517e532d,105955906,extension,https://ftp.ncbi.nlm.nih.gov/geo/series/GSE72nnn/GSE72094/matrix/GSE72094_series_matrix.txt.gz
+data/raw/geo/GPL15048_hursta_annotation.txt,ed5d1331f8424aa649640c5f1b9c12f6,24855140,extension,https://raw.githubusercontent.com/steveneschrich/hursta2a520709.db/091f06eb26f0d73824412a9d41d7adbd572a21ae/setup/hursta_annotation_latest.txt
+data/raw/tcga/TCGA_purity_Aran.rda,f5bb4bbd36cafb7000c5264c643d8650,76196,extension,https://raw.githubusercontent.com/BioinformaticsFMRP/TCGAbiolinks/f43e902d183671b165ff1eec94271c7e9b9719c9/data/Tumor.purity.rda
+data/raw/cptac/LUAD_RNAseq_gene_RSEM_coding_UQ_1500_log2_Tumor.txt,b3b840da7d1327f9be40530e14a47cd5,35757367,extension,https://cptac-pancancer-data.s3.us-west-2.amazonaws.com/data_freeze_v1.2_reorganized/LUAD/LUAD_RNAseq_gene_RSEM_coding_UQ_1500_log2_Tumor.txt
+data/raw/cptac/LUAD_meta.txt,ef333ebea984527098b6c5af23de8e31,12232,extension,https://cptac-pancancer-data.s3.us-west-2.amazonaws.com/data_freeze_v1.2_reorganized/LUAD/LUAD_meta.txt
+data/raw/cptac/LUAD_survival.txt,ed432271bc2c5d5967eee1b1b15eb163,2485,extension,https://cptac-pancancer-data.s3.us-west-2.amazonaws.com/data_freeze_v1.2_reorganized/LUAD/LUAD_survival.txt

@@ -11,7 +11,7 @@ suppressPackageStartupMessages({
 
 z <- function(x) {
   s <- stats::sd(x, na.rm = TRUE)
-  if (!is.finite(s) || s == 0) return(rep(0, length(x)))
+  if (!is.finite(s) || s == 0) return(ifelse(is.na(x), NA_real_, 0))
   as.numeric((x - mean(x, na.rm = TRUE)) / s)
 }
 
@@ -19,10 +19,11 @@ z <- function(x) {
 # Fit Surv ~ exposure + covariates and return one tidy row.
 cox_row <- function(data, exposure, covars = character(0), label = "model",
                     cohort = NA_character_) {
-  covars <- covars[covars %in% names(data)]
-  covars <- covars[vapply(covars, function(v) sum(!is.na(data[[v]])) > 0, logical(1))]
+  required <- unique(c("os_time", "os_event", exposure, covars))
+  missing <- setdiff(required, names(data))
+  if (length(missing)) stop("Missing model variables: ", paste(missing, collapse = ", "))
   f <- as.formula(paste("Surv(os_time, os_event) ~", paste(c(exposure, covars), collapse = " + ")))
-  d <- data[stats::complete.cases(data[, c("os_time", "os_event", exposure, covars)]), ]
+  d <- data[stats::complete.cases(data[, required]), ]
   fit <- coxph(f, data = d)
   s <- summary(fit)
   ci <- suppressMessages(confint(fit))
@@ -33,22 +34,6 @@ cox_row <- function(data, exposure, covars = character(0), label = "model",
              cindex = unname(s$concordance[1]),
              aic = stats::AIC(fit),
              stringsAsFactors = FALSE)
-}
-
-# C-index of a fitted model, with an optional bootstrap CI
-cindex_ci <- function(data, exposure, covars = character(0), B = 200) {
-  covars <- covars[covars %in% names(data)]
-  f <- as.formula(paste("Surv(os_time, os_event) ~", paste(c(exposure, covars), collapse = " + ")))
-  d <- data[stats::complete.cases(data[, c("os_time", "os_event", exposure, covars)]), ]
-  fit <- coxph(f, data = d)
-  est <- unname(summary(fit)$concordance[1])
-  if (B < 1) return(c(cindex = est, lo = NA, hi = NA))
-  set.seed(11)
-  boot <- replicate(B, {
-    b <- d[sample(nrow(d), replace = TRUE), ]
-    tryCatch(unname(summary(coxph(f, data = b))$concordance[1]), error = function(e) NA_real_)
-  })
-  c(cindex = est, lo = quantile(boot, .025, na.rm = TRUE), hi = quantile(boot, .975, na.rm = TRUE))
 }
 
 # ------------------------------------------------------------------- meta ----
@@ -67,57 +52,40 @@ meta_dl <- function(est, se, labels = NULL) {
        p = 2 * pnorm(-abs(re / se_re)), tau2 = tau2, I2 = I2, Q = q)
 }
 
-# ------------------------------------------------------- decision curve ------
-# Survival DCA at horizon t with IPCW (Vickers).  Returns net benefit by
-# threshold for "treat all", "treat none" and the model.
-dca_surv <- function(data, risk, time, event, t, thresholds = seq(0.01, 0.5, 0.01)) {
-  d <- data.frame(risk = risk, time = time, event = event)
-  d <- d[stats::complete.cases(d), ]
-  # censoring distribution (KM of censoring)
-  cf <- survfit(Surv(time, 1 - event) ~ 1, data = d)
-  Ghat <- stepfun(cf$time, c(1, cf$surv))
-  g_at <- function(tm) pmax(Ghat(tm), 1e-6)
-
-  ev_t  <- d$event == 1 & d$time <= t
-  ok_ne <- d$time > t
-  w <- rep(0, nrow(d))
-  w[ev_t]  <- 1 / g_at(d$time[ev_t])
-  w[ok_ne] <- 1 / g_at(t)
-
-  out <- data.frame(threshold = thresholds, nb_model = NA_real_,
-                    nb_all = NA_real_, nb_none = 0)
-  n <- nrow(d)
-  for (i in seq_along(thresholds)) {
-    pt <- thresholds[i]
-    pos <- d$risk >= pt
-    tp <- sum(w[ev_t & pos]); fp <- sum(w[ok_ne & pos])
-    out$nb_model[i] <- (tp - fp * pt / (1 - pt)) / n
-    tp_all <- sum(w[ev_t]); fp_all <- sum(w[ok_ne])
-    out$nb_all[i] <- (tp_all - fp_all * pt / (1 - pt)) / n
+# REML estimate of between-study variance and a modified Knapp–Hartung interval.
+# The Hartung–Knapp variance multiplier is bounded below by one.
+meta_reml_mkh <- function(est, se) {
+  stopifnot(length(est) == length(se), length(est) >= 2L,
+            all(is.finite(est)), all(is.finite(se) & se > 0))
+  inverse_variance <- function(tau2) 1 / (se^2 + tau2)
+  loss <- function(tau2) {
+    w <- inverse_variance(tau2)
+    center <- weighted.mean(est, w)
+    sum(log(se^2 + tau2)) + log(sum(w)) + sum(w * (est - center)^2)
   }
-  out
+  bound <- max(1, 10 * stats::var(est), 10 * max(se^2))
+  minimum <- optimize(loss, interval = c(0, bound), tol = 1e-10)
+  tau2 <- if (loss(0) <= minimum$objective) 0 else minimum$minimum
+  w <- inverse_variance(tau2)
+  center <- weighted.mean(est, w)
+  df <- length(est) - 1L
+  se_mkh <- sqrt(max(1, sum(w * (est - center)^2) / df) / sum(w))
+  ci <- center + c(-1, 1) * qt(0.975, df) * se_mkh
+  w0 <- inverse_variance(0)
+  typical_var <- df * sum(w0) / (sum(w0)^2 - sum(w0^2))
+  list(k = length(est), pooled_re = exp(center), lo = exp(ci[1L]), hi = exp(ci[2L]),
+       p = 2 * pt(-abs(center / se_mkh), df), I2 = tau2 / (tau2 + typical_var),
+       tau2 = tau2, Q = sum(w0 * (est - weighted.mean(est, w0))^2))
 }
 
-# --------------------------------------------------------- classification -----
-# continuous NRI at horizon t (event vs no event by t), censored before t dropped
-nri_continuous <- function(risk_old, risk_new, time, event, t) {
-  ev <- event == 1 & time <= t
-  ne <- time > t
-  keep <- ev | ne
-  up  <- risk_new[keep] > risk_old[keep]
-  dn  <- risk_new[keep] < risk_old[keep]
-  e <- ev[keep]
-  nri_e  <- mean(up[e])  - mean(dn[e])
-  nri_ne <- mean(dn[!e]) - mean(up[!e])
-  c(nri = nri_e + nri_ne, nri_event = nri_e, nri_nonevent = nri_ne,
-    n = sum(keep), events = sum(e))
-}
-
-# predicted absolute risk at horizon t from a coxph model
-risk_at <- function(fit, newdata, t) {
-  sf <- survfit(fit, newdata = newdata)
-  s <- summary(sf, times = t, extend = TRUE)$surv
-  1 - as.numeric(s)
+pool_estimates <- function(rows, method = "REML_mKH") {
+  se <- (log(rows$hi) - log(rows$lo)) / (2 * qnorm(0.975))
+  fit <- switch(method, REML_mKH = meta_reml_mkh(log(rows$HR), se),
+                DL_normal = meta_dl(log(rows$HR), se),
+                stop("Unknown synthesis method: ", method))
+  data.frame(method = method, k = fit$k, pooled_HR = fit$pooled_re, lo = fit$lo,
+             hi = fit$hi, p = fit$p, I2 = 100 * fit$I2, tau2 = fit$tau2, Q = fit$Q,
+             n_total = sum(rows$n), events_total = sum(rows$events))
 }
 
 # ------------------------------------------------------------- KM plotting ---
@@ -130,9 +98,4 @@ km_df <- function(data, group, time = "os_time", event = "os_event") {
                    n.censor = fit$n.censor,
                    group = rep(names(fit$strata), fit$strata))
   list(df = df, table = s, data = d)
-}
-
-logrank_p <- function(data, group) {
-  sd <- survdiff(as.formula(paste("Surv(os_time, os_event) ~", group)), data = data)
-  1 - pchisq(sd$chisq, length(sd$n) - 1)
 }

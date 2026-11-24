@@ -1,5 +1,17 @@
-axis,validation_pooled,all_cohorts_pooled,k_validation,I2_percent,tau2,p
-EMT/stroma,1.02 (0.75-1.39),1.03 (0.85-1.26),3,67,0.0505,0.905862257681667
-Hypoxia/glycolysis,1.37 (1.00-1.86),1.38 (1.13-1.68),3,67,0.0497,0.0487766046837949
-Immune infiltration,1.09 (0.81-1.48),1.04 (0.87-1.25),3,70,0.0493,0.56469561199986
-Proliferation,1.32 (1.13-1.54),1.31 (1.17-1.47),3,0,0,0.000570341182164714
+programme,scope,method,k,participants,deaths,HR_95_CI,p,p_holm,I2_pct,tau2
+proliferation,validation,REML_mKH,3,437,158,1.32 (0.93 to 1.86),0.07436,0.2974,0,0
+hypoxia,validation,REML_mKH,3,437,158,1.37 (0.66 to 2.82),0.2043,0.6128,69.1,0.0550921354820058
+emt_stroma,validation,REML_mKH,3,437,158,1.02 (0.52 to 2.00),0.902,1,65.9,0.0480841847875784
+immune,validation,REML_mKH,3,437,158,1.09 (0.57 to 2.08),0.6155,1,68.7,0.0462070294656831
+proliferation,validation,DL_normal,3,437,158,1.32 (1.13 to 1.54),0.0005412,0.002165,0,0
+hypoxia,validation,DL_normal,3,437,158,1.37 (1.00 to 1.86),0.04903,0.1471,66.9,0.0497730511815214
+emt_stroma,validation,DL_normal,3,437,158,1.02 (0.75 to 1.40),0.8861,1,67,0.0505344566407342
+immune,validation,DL_normal,3,437,158,1.09 (0.81 to 1.48),0.5611,1,70.2,0.0496403659712475
+proliferation,extended,REML_mKH,4,830,269,1.34 (1.10 to 1.62),0.01721,0.06882,0,0
+hypoxia,extended,REML_mKH,4,830,269,1.35 (0.95 to 1.90),0.07068,0.212,49.5,0.0184574683918732
+emt_stroma,extended,REML_mKH,4,830,269,1.03 (0.74 to 1.43),0.8235,1,56.1,0.0233941114386361
+immune,extended,REML_mKH,4,830,269,1.03 (0.73 to 1.46),0.7824,1,62.9,0.027326201165659
+proliferation,extended,DL_normal,4,830,269,1.34 (1.19 to 1.50),1.585e-06,6.338e-06,0,0
+hypoxia,extended,DL_normal,4,830,269,1.35 (1.11 to 1.64),0.002559,0.007678,51.1,0.019702930336061
+emt_stroma,extended,DL_normal,4,830,269,1.03 (0.84 to 1.26),0.8082,1,55.6,0.0229305464592263
+immune,extended,DL_normal,4,830,269,1.03 (0.84 to 1.26),0.7644,1,60.1,0.0242877900050541

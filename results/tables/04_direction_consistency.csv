@@ -1,5 +1,5 @@
-exposure,n_cohorts,n_consistent,min_HR,max_HR
-proliferation,4,4,1.28,1.42
-hypoxia,4,4,1.09,1.96
-emt_stroma,4,3,0.79,1.33
-immune,4,2,0.84,1.36
+exposure,n_cohorts,n_positive,min_HR,max_HR
+proliferation,5,5,1.27956275091233,1.41890771993225
+hypoxia,5,5,1.08727455067711,1.9594398676565
+emt_stroma,5,4,0.796110627624819,1.33989406601331
+immune,5,2,0.843843047496324,1.36360489346725

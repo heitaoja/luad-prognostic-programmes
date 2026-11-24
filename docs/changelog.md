@@ -26,3 +26,13 @@
    因此正文把外部队列作为主要证据，TCGA 作为发现。
 2. **分期分层**：是在看到总效应后才做的（探索性），已在 README 中标注。
 3. **互调模型**（四程序同时入模）：在看到单变量结果后补充，用于回应"纯度/共线"质疑，标注为探索性。
+
+## 2026-11-24 revision
+
+- Corrected the GMT description parsing, used midranks for expression ties and recalculated all 14 gene-set scores.
+- Changed the TCGA unit from specimen to participant and tested an alternate vial rule. Separated median OS and potential follow-up.
+- Restored GSE72094 via the versioned original-centre HuRSTA map. Kept the three original external cohorts identifiable and added a four-cohort synthesis.
+- Added modified Knapp–Hartung inference, Holm correction, model diagnostics, molecular benchmark comparisons, and exact-specimen purity adjustment.
+- Moved patient-level derived scores to ignored processed data. Replaced the previous within-cohort incremental analysis and risk reclassification summaries with frozen cohort transport, calibration and paired C-index comparisons.
+- Used a shared assay gene list and within-sample averaging of duplicate features for the final transport analysis. This removes target-cohort mean expression from duplicate-probe preprocessing.
+- Added an independent RNA-seq assessment using pinned CPTAC-LUAD inputs, including separate association estimates and evaluation of TCGA models fitted to the 17,593 comparable genes.

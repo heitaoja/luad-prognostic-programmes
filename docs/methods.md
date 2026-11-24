@@ -1,88 +1,31 @@
-# 方法与参数理由
+# Statistical and measurement methods
 
-> 每个参数都要写"为什么是这个值"。报告与复现说明的 Methods 从这里取。
+The analysis specification is [analysis_plan_v2.md](analysis_plan_v2.md). The main manuscript includes the clinical interpretation and study limitations.
 
-## 1. 数据获取
+## Specimen and molecular features
 
-| 数据 | 方式 | 说明 |
-|---|---|---|
-| TCGA-LUAD 表达 | `gdc-hub.s3.us-east-1.amazonaws.com/download/TCGA-LUAD.star_counts.tsv.gz` | UCSC Xena 维护的 GDC 镜像；内容是 GDC STAR counts，已 `log2(count+1)` |
-| TCGA-LUAD 生存 | `TCGA-LUAD.survival.tsv.gz` | `OS.time` 原始单位是**天**，已除 30.4375 转为月 |
-| TCGA-LUAD 临床 | `TCGA-LUAD.clinical.tsv.gz` | AJCC 分期、年龄、性别、吸烟包年 |
-| GEO 队列 | `ftp.ncbi.nlm.nih.gov/geo/series/.../matrix/GSE*_series_matrix.txt.gz` | 矩阵内含表达值与样本注释 |
+The unit of inference is the patient. The primary TCGA sample rule takes the first eligible primary vial in barcode order. The reverse choice provides an alternate specimen sensitivity. The assay is an expression-based readout of the bulk tumour specimen.
 
-**为什么不用 Xena 的 Toil 重组矩阵**：直接取 GDC 的 STAR counts，与临床字段同源、版本可追溯。
+The association analysis keeps the feature with the highest cohort mean log expression when several features map to one symbol. For model transport, aggregate duplicates by the within-specimen mean of log expression before ranking. Platform identifiers and mapping files define the shared gene universe. This step uses no outcomes, and duplicate aggregation uses no statistics from other participants. The expression scale, gene membership and per-set coverage are audited in outputs.
 
-## 2. 基因注释
+For a sample with N genes, let r_i be the descending expression midrank and v_i = N - r_i + 1. For a set of k measured genes, the score is the difference between the mean v_i of genes inside the set weighted by v_i^0.25 and the unweighted mean v_i outside the set, divided by N. For untied expression this is the normalized integral of the weighted rank walk. Tied genes receive the same contribution. In the association analysis, each component is z-scored within cohort and the equally weighted component average is z-scored again. Age is centered and scaled within cohort.
 
-| 平台 | 注释包 | 说明 |
-|---|---|---|
-| TCGA Ensembl ID | `org.Hs.eg.db` | 去掉版本号后缀（`.15`）后映射到 Symbol |
-| GPL570（三个芯片队列） | `hgu133plus2.db` | 探针 → Symbol |
+## Association and specificity
 
-**重复基因**：保留平均表达最高的一行，而不是取平均，避免把不同探针的信号混在一起。
+Cox models use overall survival time in months and a continuous programme score, with age, sex and stage as covariates. The complete-case count is documented by cohort. A secondary set of models assesses stage-stratified baseline hazards, stage I–II restriction, a 3-df spline and four-programme mutual adjustment. Schoenfeld tests describe model assumptions. Programme HRs from linear models describe a summary tendency when the spline suggests nonlinearity.
 
-## 3. 表达尺度
+Synthesis uses REML to estimate between-cohort variance, inverse-variance weighting, and a modified Knapp–Hartung interval with variance multiplier bounded below by one and k–1 degrees of freedom. The normal-approximation DerSimonian–Laird synthesis is a sensitivity analysis. Holm adjustment applies to the four programme tests in each synthesis scope. The original external cohorts and the expanded external set have separate estimates.
 
-- TCGA：STAR counts → `log2(count+1)`（数据源已完成）。
-- 芯片：GSE31210 的矩阵是**线性强度**（中位数 99.6），先 `log2(x+1)`；GSE37745 / GSE50081 已是 log2。
-- 所有分析只在队列内标准化；**跨队列不比较绝对值**，只合并效应量。
+Random programmes use a one-to-one mapping from genes in the observed component sets to other measured genes in the same average-rank decile. Reusing a replacement across component sets preserves overlap. The upper-tail empirical probability uses the plus-one correction. TCGA survival permutations shuffle time and status together and serve as a pipeline check. The alternative mean expression score averages gene-wise z-scores over the union of component genes.
 
-## 4. ssGSEA 打分
+## Transport of fitted models
 
-**算法**：Barbie et al. 2009 的 single-sample GSEA。样本内按表达量降序排名，
-命中基因权重 `(N − rank + 1)^0.25`，未命中基因步长 `−1/(N − k)`，富集分数 = 游走曲线积分。
+The main transport gene universe is restricted to symbols available across TCGA and the four GEO series. TCGA defines the mean and standard deviation of each component, the composite reference, and the MKI67 percentile reference. Frozen features are combined with stage categories I–IV, age per decade centred at 65 and sex with female as the reference. TCGA alone determines model coefficients and baseline hazard. Test-cohort calibration slopes describe how the spread of the fixed predictions relates to survival.
 
-**实现**：`R/lib_score.R` 用闭式求和代替逐位置游走：
+Discrimination is measured by Harrell C. Paired percentile intervals use 1,000 patient resamples in each test cohort, with the fitted models fixed. For 36-month risk, observed mortality is estimated by Kaplan–Meier. The Brier score uses inverse censoring weights from the test cohort: G(t-) for observed deaths by the horizon and G(36) for patients followed beyond 36 months. Patients censored by the horizon carry zero weight in this score. Calibration plots group fixed predicted risks in quartiles and show Greenwood-based Kaplan–Meier intervals. The underlying C and Brier measures and score contrasts are available as numerical tables.
 
-```
-ES = Σ_hits w_j·(N−j+1) − (Σ_nonhits (N−j+1)) / (N−k)
-```
+A platform match is an assay-design condition. Reproducing these fixed models in an additional cohort requires the archived gene list and the same preprocessing and reference values.
 
-复杂度从 O(N) 降到 O(k)（k = 基因集大小），这是能在 500 次随机基因集上跑零分布的前提。
-**正确性**：与逐步游走实现逐元素比较，最大绝对误差 9.7×10⁻¹⁷。
+## RNA-seq evaluation
 
-**为什么 α = 0.25**：GSVA 默认值，对基因排序不敏感。
-
-**程序得分**：成员基因集 z 分数平均后再 z 标准化。用平均而不是取第一主成分，
-是因为 PC1 的符号不稳定，跨队列不可比。
-
-## 5. 生存模型
-
-- Cox 比例风险模型；连续变量，报告每 1 SD 的 HR。
-- 协变量：AJCC 分期（I/II/III/IV 因子）、年龄（标准化）、性别。
-- 完整病例分析（TCGA 515 → 497，缺分期或年龄）；缺失情况见 `results/tables/01_cohort_audit.csv`。
-- 事件/变量：TCGA 185 / 5 ≈ 37，远高于 EPV ≥ 10 的经验下限。
-- KM 图仅用于可视化，不做推断（推断用连续变量模型）。
-
-## 6. 合并
-
-DerSimonian–Laird 随机效应模型，在 log-HR 尺度合并；报告合并 HR、95% CI、I²、τ²、Q。
-选随机效应而非固定效应，是因为三个验证队列的人群与随访强度不同（I² 在 0–70% 之间）。
-
-## 7. 增量价值
-
-| 指标 | 实现 | 说明 |
-|---|---|---|
-| ΔC-index | 两个 Cox 模型的 `concordance` 之差；bootstrap 200 次给 CI | 在同一批完整病例上比较 |
-| 似然比检验 | `anova(fit0, fit1)` | 嵌套模型 |
-| 连续 NRI | 36 个月预测风险的变化方向，事件与非事件分别计算后相加 | — |
-| DCA | IPCW 加权净获益，36 个月，阈值 0.05–0.60 | 删失用 KM 估计 |
-
-## 8. 阴性对照
-
-- 随机基因集：按真实基因集大小逐个匹配，500 次（TCGA）/200 次（GSE31210）。
-- 标签置换：1000 次。
-- 经验 p 用 `(计数+1)/(B+1)`，避免 p = 0。
-
-## 9. 软件
-
-R 4.6.2；`survival`、`data.table`、`ggplot2`、`patchwork`、`openxlsx`、
-`org.Hs.eg.db`、`hgu133plus2.db`、`AnnotationDbi`。环境写入 `docs/sessionInfo.txt`。
-
-## 10. 明确的未做项
-
-- **肿瘤纯度未校正**（ESTIMATE / ABSOLUTE 未运行）。这是最大的方法学缺口，已写进局限。
-- **未训练数据驱动模型**（LASSO / 随机森林）。刻意的设计选择：避免"用结局筛基因"的循环论证；
-  代价是失去了与常规预后模型的直接比较。
-- **未做竞争风险模型**：把非肺癌死亡视为删失，可能高估风险。
+CPTAC estimates use cohort-standardised programme scores and Cox adjustment for stage I versus II–IV, age and sex. For transport, start from the primary gene list and remove the two symbols listed in the CPTAC assay audit. Repeat the TCGA fitting procedure with the 17,593 covered genes, and apply the resulting TCGA parameters to CPTAC. The sensitivity analysis uses the same five model formulae, risk horizon, metrics and bootstrap design as the GEO analyses. The RNA-seq coefficients and score references are available with the associated tables. [Audit](../results/tables/05b_rnaseq_audit.csv) · [Coefficients and 36-month baseline hazards](../results/tables/05b_rnaseq_frozen_coefficients.csv) · [Component and programme references](../results/tables/05b_rnaseq_score_reference.csv)

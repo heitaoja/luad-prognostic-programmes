@@ -50,27 +50,21 @@ cat("\n--- covariates in the model with the strongest axis (", best, ") ---\n")
 print(st, row.names = FALSE, digits = 3)
 
 # ---- 2. C-index ladder -----------------------------------------------------
-base <- cindex_ci(d, COV[1], COV[-1], B = 0)          # stage only
-clin <- cindex_ci(d, COV[1], COV[-1], B = 0)
-lad <- data.frame(model = "stage", variable = "stage", cindex = unname(clin["cindex"]))
-for (a in AXES) {
-  ci <- cindex_ci(d, a, COV, B = 0)
-  lad <- rbind(lad, data.frame(model = paste0("stage + ", a), variable = a,
-                               cindex = unname(ci["cindex"])))
-}
-fit_clin <- coxph(Surv(os_time, os_event) ~ stage + age_z + sex, data = d)
-c_clin <- unname(summary(fit_clin)$concordance[1])
-lad <- rbind(data.frame(model = "stage + age + sex", variable = "clinical",
-                        cindex = c_clin), lad)
-lad$delta <- lad$cindex - c_clin
-# likelihood-ratio test for the added axis
-for (a in AXES) {
-  f2 <- coxph(as.formula(paste("Surv(os_time, os_event) ~", a, "+ stage + age_z + sex")), data = d)
-  lr <- anova(fit_clin, f2)
-  lad$LR_p[lad$variable == a] <- lr$`Pr(>|Chi|)`[2]
-  lad$AIC[lad$variable == a] <- AIC(f2)
-}
-lad$AIC[lad$variable == "clinical"] <- AIC(fit_clin)
+dc <- d[complete.cases(d[, c("os_time", "os_event", COV, AXES)]), ]
+clinical_formula <- Surv(os_time, os_event) ~ stage + age_z + sex
+fit_clin <- coxph(clinical_formula, data = dc)
+c_clin <- unname(summary(fit_clin)$concordance[1L])
+models <- c("clinical", "stage", AXES)
+lad <- rbindlist(lapply(models, function(a) {
+  f <- switch(a, clinical = clinical_formula, stage = Surv(os_time, os_event) ~ stage,
+              reformulate(c(COV, a), response = "Surv(os_time, os_event)"))
+  fit <- coxph(f, data = dc)
+  cindex <- unname(summary(fit)$concordance[1L])
+  p <- if (a %in% AXES) anova(fit_clin, fit)[["Pr(>|Chi|)"]][2L] else NA_real_
+  data.frame(model = if (a %in% AXES) paste("clinical +", a) else a,
+             variable = a, n = nrow(dc), cindex = cindex,
+             delta = cindex - c_clin, LR_p = p, AIC = AIC(fit))
+}))
 fwrite(lad, file.path(OUT, "03_cindex_ladder.csv"))
 cat("\n--- C-index ladder (TCGA) ---\n")
 print(lad[, c("model", "cindex", "delta", "LR_p", "AIC")], row.names = FALSE, digits = 3)
@@ -90,16 +84,14 @@ for (i in seq_len(nrow(strat)))
       strat$stage[i], strat$n[i], strat$events[i], strat$HR[i], strat$lo[i],
       strat$hi[i], strat$p[i]))
 
-# ---- 4. interaction with stage --------------------------------------------
-cat("\n--- interaction axis x stage ---\n")
-for (a in AXES) {
-  f <- coxph(as.formula(paste("Surv(os_time, os_event) ~", a, "* stage + age_z + sex")), data = d)
-  ip <- summary(f)$coef
-  ii <- grep(":", rownames(ip))
-  if (!length(ii)) next
-  p_int <- min(ip[ii, "Pr(>|z|)"])
-  cat(sprintf("%-14s smallest interaction p = %.3f\n", a, p_int))
-}
+# ---- 4. exploratory omnibus interaction with stage -------------------------
+interactions <- rbindlist(lapply(AXES, function(a) {
+  additive <- coxph(reformulate(c(a, COV), response = "Surv(os_time, os_event)"), data = dc)
+  interaction <- coxph(reformulate(c(paste0(a, " * stage"), "age_z", "sex"),
+                                   response = "Surv(os_time, os_event)"), data = dc)
+  data.frame(axis = a, omnibus_LR_p = anova(additive, interaction)[["Pr(>|Chi|)"]][2L])
+}))
+fwrite(interactions, file.path(OUT, "03_stage_interaction.csv"))
 
 # ---- 5. balance hypothesis (secondary, pre-specified first) ----------------
 fb <- cox_row(d, "balance", COV, "adjusted", "TCGA-LUAD")

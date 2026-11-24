@@ -13,8 +13,9 @@
 # =============================================================================
 
 suppressPackageStartupMessages({
-  library(data.table); library(AnnotationDbi); library(org.Hs.eg.db)
+  library(data.table); library(AnnotationDbi); library(org.Hs.eg.db); library(survival)
 })
+source("R/lib_inputs.R")
 
 PROJ <- normalizePath(".", winslash = "/")
 OUT  <- file.path(PROJ, "results", "tables");    dir.create(OUT, TRUE, showWarnings = FALSE)
@@ -63,28 +64,24 @@ read_geo <- function(file) {
   list(expr = mat, pheno = pheno)
 }
 
-to_symbol <- function(mat, platform) {
+to_symbol <- function(mat, platform, transport = FALSE) {
   if (platform == "ensembl") {
-    ids <- sub("\\..*$", "", rownames(mat))
-    sym <- suppressMessages(AnnotationDbi::mapIds(org.Hs.eg.db, keys = unique(ids),
-             keytype = "ENSEMBL", column = "SYMBOL", multiVals = "first"))[ids]
-    sym <- as.character(sym)
+    sym <- ensembl_symbols(rownames(mat))
   } else if (platform == "hgu133plus2") {
     sym <- suppressMessages(AnnotationDbi::mapIds(hgu133plus2.db::hgu133plus2.db,
              keys = rownames(mat), keytype = "PROBEID", column = "SYMBOL",
              multiVals = "first"))
     sym <- as.character(sym)
+  } else if (platform == "hursta") {
+    annotation <- fread(file.path(RAW, "geo", "GPL15048_hursta_annotation.txt"),
+                        select = c("ProbeID", "NumGenes", "Symbol"), na.strings = "---")
+    annotation <- unique(annotation[NumGenes == 1L & !is.na(Symbol)])
+    unambiguous <- annotation[, .N, by = ProbeID][N == 1L, ProbeID]
+    annotation <- annotation[ProbeID %in% unambiguous]
+    sym <- annotation$Symbol[match(rownames(mat), annotation$ProbeID)]
   } else stop("unknown platform: ", platform)
 
-  keep <- !is.na(sym) & nzchar(sym)
-  mat <- mat[keep, , drop = FALSE]; sym <- sym[keep]
-  if (!nrow(mat)) return(NULL)
-  mu <- rowMeans(mat, na.rm = TRUE)
-  o <- order(mu, decreasing = TRUE)
-  mat <- mat[o, , drop = FALSE]; sym <- sym[o]
-  f <- !duplicated(sym)
-  mat <- mat[f, , drop = FALSE]; rownames(mat) <- sym[f]
-  mat
+  collapse_gene_expression(mat, sym, transport)
 }
 
 # "Stage IA" / "IA" / "1a" / "2b" / "IV" -> I, II, III, IV
@@ -124,11 +121,22 @@ num <- function(x) suppressWarnings(as.numeric(gsub("[^0-9.\\-]", "", as.charact
 
 audit <- list()
 audit_add <- function(id, expr, clin, unit) {
+  km_median <- function(event) {
+    fit <- survfit(Surv(clin$os_time, event) ~ 1)
+    round(unname(summary(fit)$table["median"]), 1)
+  }
+  complete <- complete.cases(clin[, c("stage", "age", "sex")])
+  stopifnot(identical(colnames(expr), clin$sample), !anyDuplicated(clin$sample),
+            all(clin$os_event %in% 0:1), all(is.finite(clin$os_time) & clin$os_time > 0))
   audit[[id]] <<- data.frame(
     cohort = id, n_samples = ncol(expr), n_genes = nrow(expr),
     n_os = sum(!is.na(clin$os_time) & !is.na(clin$os_event)),
     n_events = sum(clin$os_event == 1, na.rm = TRUE),
-    median_os_mo = round(median(clin$os_time, na.rm = TRUE), 1),
+    median_os_mo = km_median(clin$os_event),
+    median_followup_mo = km_median(1L - clin$os_event),
+    n_complete = sum(complete), events_complete = sum(clin$os_event[complete]),
+    events_36m = sum(clin$os_event == 1L & clin$os_time <= 36),
+    at_risk_36m = sum(clin$os_time >= 36),
     n_stage = sum(!is.na(clin$stage)), pct_stage_known = round(100 * mean(!is.na(clin$stage))),
     n_age = sum(!is.na(clin$age)), n_sex = sum(!is.na(clin$sex)),
     raw_time_unit = unit,
@@ -144,15 +152,24 @@ tc <- file.path(RAW, "tcga")
 ex <- fread(file.path(tc, "TCGA-LUAD.star_counts.tsv.gz"), data.table = FALSE, showProgress = FALSE)
 rownames(ex) <- ex[[1]]; ex <- as.matrix(ex[, -1, drop = FALSE]); storage.mode(ex) <- "double"
 ex <- ex[, grepl("-01[ABC]?$", colnames(ex)), drop = FALSE]        # primary tumours
-ex <- to_symbol(ex, "ensembl")
+n_primary <- ncol(ex)
 surv <- fread(file.path(tc, "TCGA-LUAD.survival.tsv.gz"), data.table = FALSE)
 cl   <- fread(file.path(tc, "TCGA-LUAD.clinical.tsv.gz"), data.table = FALSE)
-key  <- substr(colnames(ex), 1, 15)
-i_s  <- match(key, substr(surv$sample, 1, 15))
-i_c  <- match(key, substr(cl$sample, 1, 15))
+
+match_tcga <- function(sample, source) {
+  exact <- match(sample, source)
+  missing <- is.na(exact)
+  priority <- order(!grepl("-01[ABC]?$", source), source)
+  exact[missing] <- priority[match(substr(sample[missing], 1L, 12L),
+                                   substr(source[priority], 1L, 12L))]
+  exact
+}
+i_s <- match_tcga(colnames(ex), surv$sample)
+i_c <- match_tcga(colnames(ex), cl$sample)
 
 tcga_clin <- data.frame(
   sample   = colnames(ex),
+  patient  = substr(colnames(ex), 1L, 12L),
   os_time  = as.numeric(surv$OS.time[i_s]) / DAY_PER_MONTH,   # raw unit: days
   os_event = as.integer(surv$OS[i_s]),
   age      = num(cl$age_at_index.demographic[i_c]),
@@ -162,17 +179,30 @@ tcga_clin <- data.frame(
   stringsAsFactors = FALSE)
 tcga_clin <- tcga_clin[!is.na(tcga_clin$os_time) & !is.na(tcga_clin$os_event) &
                        tcga_clin$os_time > 0, ]
-ex <- ex[, tcga_clin$sample, drop = FALSE]
-cohorts[["TCGA-LUAD"]] <- list(expr = ex, clin = tcga_clin,
+linked <- tcga_clin[order(tcga_clin$sample), ]
+repeat_os <- unique(linked[, c("patient", "os_time", "os_event")])
+if (anyDuplicated(repeat_os$patient))
+  stop("Repeated TCGA samples disagree on patient-level survival")
+tcga_clin <- linked[!duplicated(linked$patient), ]
+tcga_alt <- linked[!duplicated(linked$patient, fromLast = TRUE), ]
+tcga_alt <- tcga_alt[match(tcga_clin$patient, tcga_alt$patient), ]
+tcga <- to_symbol(ex[, tcga_clin$sample, drop = FALSE], "ensembl", transport = TRUE)
+tcga_alt_expr <- to_symbol(ex[, tcga_alt$sample, drop = FALSE], "ensembl")
+fwrite(data.frame(primary_specimens = n_primary, specimens_with_os = nrow(linked),
+                  participants_with_os = nrow(tcga_clin),
+                  participants_with_repeated_specimens = sum(table(linked$patient) > 1L),
+                  deaths = sum(tcga_clin$os_event)), file.path(OUT, "01_tcga_participant_flow.csv"))
+rm(ex)
+cohorts[["TCGA-LUAD"]] <- c(tcga, list(clin = tcga_clin,
   meta = list(source = "GDC Data Portal (via gdc-hub mirror)",
               platform = "Illumina RNA-seq, STAR counts", scale = "log2(count+1)",
-              role = "discovery / training", raw_time_unit = "days"))
-audit_add("TCGA-LUAD", ex, tcga_clin, "days")
+              role = "discovery / training", raw_time_unit = "days")))
+audit_add("TCGA-LUAD", tcga$expr, tcga_clin, "days")
 
 # ================================================================ 2. GSE31210
 message("== GSE31210")
 g <- read_geo(file.path(RAW, "geo", "GSE31210_series_matrix.txt.gz"))
-m <- to_symbol(log2(g$expr + 1), "hgu133plus2")     # matrix is on the linear scale
+mapped <- to_symbol(log2(g$expr + 1), "hgu133plus2", transport = TRUE)
 p <- g$pheno
 excl <- p[["exclude for prognosis analysis due to incomplete resection or adjuvant therapy"]]
 clin <- data.frame(
@@ -190,17 +220,18 @@ clin <- data.frame(
 keep <- grepl("primary lung tumor", p$tissue, ignore.case = TRUE) &
         !is.na(clin$os_time) & !is.na(clin$os_event) & clin$os_time > 0 &
         !(grepl("^exclude", excl %||% "none", ignore.case = TRUE))
-clin <- clin[keep, ]; m <- m[, clin$sample, drop = FALSE]
-cohorts[["GSE31210"]] <- list(expr = m, clin = clin,
+clin <- clin[keep, ]
+mapped <- lapply(mapped, function(x) x[, clin$sample, drop = FALSE])
+cohorts[["GSE31210"]] <- c(mapped, list(clin = clin,
   meta = list(source = "GEO", platform = "Affymetrix HG-U133 Plus 2.0 (GPL570)",
               scale = "log2(intensity+1)", role = "external validation",
-              raw_time_unit = "days"))
-audit_add("GSE31210", m, clin, "days")
+              raw_time_unit = "days")))
+audit_add("GSE31210", mapped$expr, clin, "days")
 
 # ================================================================ 3. GSE37745
 message("== GSE37745")
 g <- read_geo(file.path(RAW, "geo", "GSE37745_series_matrix.txt.gz"))
-m <- to_symbol(g$expr, "hgu133plus2")
+mapped <- to_symbol(g$expr, "hgu133plus2", transport = TRUE)
 p <- g$pheno
 clin <- data.frame(
   sample   = p$gsm,
@@ -213,17 +244,18 @@ clin <- data.frame(
   stringsAsFactors = FALSE)
 keep <- !is.na(clin$os_time) & !is.na(clin$os_event) & clin$os_time > 0 &
         grepl("^adeno", clin$histology, ignore.case = TRUE)
-clin <- clin[keep, ]; m <- m[, clin$sample, drop = FALSE]
-cohorts[["GSE37745"]] <- list(expr = m, clin = clin,
+clin <- clin[keep, ]
+mapped <- lapply(mapped, function(x) x[, clin$sample, drop = FALSE])
+cohorts[["GSE37745"]] <- c(mapped, list(clin = clin,
   meta = list(source = "GEO", platform = "Affymetrix HG-U133 Plus 2.0 (GPL570)",
               scale = "log2", role = "external validation", raw_time_unit = "days",
-              selection = "histology == adeno"))
-audit_add("GSE37745", m, clin, "days")
+              selection = "histology == adeno")))
+audit_add("GSE37745", mapped$expr, clin, "days")
 
 # ================================================================ 4. GSE50081
 message("== GSE50081")
 g <- read_geo(file.path(RAW, "geo", "GSE50081_series_matrix.txt.gz"))
-m <- to_symbol(g$expr, "hgu133plus2")
+mapped <- to_symbol(g$expr, "hgu133plus2", transport = TRUE)
 p <- g$pheno
 clin <- data.frame(
   sample   = p$gsm,
@@ -237,17 +269,50 @@ clin <- data.frame(
   stringsAsFactors = FALSE)
 keep <- !is.na(clin$os_time) & !is.na(clin$os_event) & clin$os_time > 0 &
         grepl("^adenocarcinoma$", trimws(tolower(clin$histology)))
-clin <- clin[keep, ]; m <- m[, clin$sample, drop = FALSE]
-cohorts[["GSE50081"]] <- list(expr = m, clin = clin,
+clin <- clin[keep, ]
+mapped <- lapply(mapped, function(x) x[, clin$sample, drop = FALSE])
+cohorts[["GSE50081"]] <- c(mapped, list(clin = clin,
   meta = list(source = "GEO", platform = "Affymetrix HG-U133 Plus 2.0 (GPL570)",
               scale = "log2", role = "external validation", raw_time_unit = "years",
-              selection = "histology == adenocarcinoma"))
-audit_add("GSE50081", m, clin, "years")
+              selection = "histology == adenocarcinoma")))
+audit_add("GSE50081", mapped$expr, clin, "years")
+
+# ====================================================== 5. GSE72094 extension
+extra_files <- file.path(RAW, "geo", c("GSE72094_series_matrix.txt.gz",
+                                     "GPL15048_hursta_annotation.txt"))
+if (Sys.getenv("LUAD_CORE_ONLY") != "1") {
+  if (!all(file.exists(extra_files)))
+    stop("GSE72094 requires both files in docs/data_provenance.md. Set LUAD_CORE_ONLY=1 for a core-only replay.")
+  message("== GSE72094")
+  g <- read_geo(extra_files[1L])
+  p <- g$pheno
+  clin <- data.frame(sample = p$gsm, patient = p$patient_id,
+                     os_time = num(p$survival_time_in_days) / DAY_PER_MONTH,
+                     os_event = event_from(p$vital_status),
+                     age = num(p$age_at_diagnosis), sex = sex_from(p$gender),
+                     stage = stage_from(p$Stage), smoking = p$smoking_status,
+                     kras = p$kras_status, egfr = p$egfr_status,
+                     stk11 = p$stk11_status, tp53 = p$tp53_status,
+                     stringsAsFactors = FALSE)
+  stopifnot(!anyNA(clin$patient), !anyDuplicated(clin$patient))
+  keep <- !is.na(clin$os_time) & !is.na(clin$os_event) & clin$os_time > 0
+  clin <- clin[keep, ]
+  mapped <- to_symbol(g$expr[, clin$sample, drop = FALSE], "hursta", transport = TRUE)
+  stopifnot("MKI67" %in% rownames(mapped$expr))
+  cohorts[["GSE72094"]] <- c(mapped, list(clin = clin,
+    meta = list(source = "GEO (Schabath et al.)", platform = "HuRSTA (GPL15048)",
+                scale = "log2", role = "external extension", raw_time_unit = "days")))
+  audit_add("GSE72094", mapped$expr, clin, "days")
+}
 
 # ==================================================================== save ===
 aud <- do.call(rbind, audit); rownames(aud) <- NULL
 fwrite(aud, file.path(OUT, "01_cohort_audit.csv"))
+transport_expression <- lapply(cohorts, function(x) x$transport_expr)
+saveRDS(transport_expression, file.path(PDIR, "transport_expression.rds"))
+cohorts <- lapply(cohorts, function(x) x[c("expr", "clin", "meta")])
 saveRDS(cohorts, file.path(PDIR, "cohorts.rds"))
+saveRDS(list(expr = tcga_alt_expr, clin = tcga_alt), file.path(PDIR, "tcga_alternate.rds"))
 
 cat("\n================ cohort audit ================\n")
 print(aud, row.names = FALSE)

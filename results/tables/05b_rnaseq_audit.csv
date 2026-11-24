@@ -1,0 +1,2 @@
+cohort,source_cases,with_os,excluded_invalid_os,deaths,complete_cases,complete_case_deaths,stage_known,age_known,sex_known,median_followup_months,original_genes_required,original_genes_measured,missing_symbols,transport_reference
+CPTAC-LUAD,110,105,5,23,105,23,105,105,105,22.8336755646817,17595,17593,ACTL10;NPBWR1,TCGA_fit_on_compatible_gene_subset

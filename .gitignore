@@ -2,6 +2,9 @@
 data/raw/
 data/processed/
 data/interim/
+results/logs/
+results/objects/
+results/tables/02_scores_*.csv
 *.rds
 *.RData
 *.h5ad
